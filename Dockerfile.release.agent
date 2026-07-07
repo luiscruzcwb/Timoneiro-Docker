@@ -1,0 +1,6 @@
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates tzdata
+COPY timoneiro-agent /usr/local/bin/timoneiro-agent
+EXPOSE 1895
+ENV TIMONEIRO_AGENT_PORT=1895
+ENTRYPOINT ["/usr/local/bin/timoneiro-agent"]

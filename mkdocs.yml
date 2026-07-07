@@ -1,0 +1,62 @@
+site_name: Timoneiro
+site_url: https://timoneiro.dev/
+repo_url: https://github.com/luiscruzcwb/timoneiro/
+edit_uri: edit/main/docs/
+site_description: A modern Docker container update manager with a full web UI.
+site_author: Luis Cruz
+
+theme:
+  name: material
+  logo: images/timoneiro-icon.svg
+  favicon: images/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: cyan
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: cyan
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+
+extra_css:
+  - stylesheets/theme.css
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.saneheaders
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Introduction: introduction.md
+  - Quick Start: quick-start.md
+  - Authentication: authentication.md
+  - Configuration: configuration.md
+  - Environments: environments.md
+  - Update Policies: update-policies.md
+  - Private Registries: private-registries.md
+  - Notifications: notifications.md
+  - Security Scanning: security-scanning.md
+  - Remote Agent: agent.md
+  - HTTP API: api.md

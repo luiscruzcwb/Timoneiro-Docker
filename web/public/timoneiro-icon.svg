@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="512" height="512">
+  <defs>
+    <linearGradient id="main" x1="5%" y1="5%" x2="95%" y2="95%">
+      <stop offset="0%" stop-color="#5EECFF"></stop>
+      <stop offset="45%" stop-color="#22D3EE"></stop>
+      <stop offset="100%" stop-color="#0369A1"></stop>
+    </linearGradient>
+    <linearGradient id="ctop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93E4FF"></stop>
+      <stop offset="100%" stop-color="#38BDF8"></stop>
+    </linearGradient>
+    <linearGradient id="cleft" x1="0%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"></stop>
+      <stop offset="100%" stop-color="#0C4A6E"></stop>
+    </linearGradient>
+    <linearGradient id="cright" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7"></stop>
+      <stop offset="100%" stop-color="#072F4A"></stop>
+    </linearGradient>
+  </defs>
+
+  
+  <circle cx="100" cy="97" r="58" fill="none" stroke="url(#main)" stroke-width="9"></circle>
+
+  
+  <g stroke="url(#main)" stroke-width="6.5" stroke-linecap="round">
+    <line x1="100" y1="81" x2="100" y2="39"></line>
+    <line x1="111.3" y1="85.7" x2="141" y2="56"></line>
+    <line x1="116" y1="97" x2="158" y2="97"></line>
+    <line x1="111.3" y1="108.3" x2="141" y2="138"></line>
+    <line x1="100" y1="113" x2="100" y2="155"></line>
+    <line x1="88.7" y1="108.3" x2="59" y2="138"></line>
+    <line x1="84" y1="97" x2="42" y2="97"></line>
+    <line x1="88.7" y1="85.7" x2="59" y2="56"></line>
+  </g>
+
+  
+  <g fill="url(#main)">
+    <circle cx="100" cy="29" r="5.5"></circle>
+    <circle cx="148.1" cy="48.9" r="5.5"></circle>
+    <circle cx="168" cy="97" r="5.5"></circle>
+    <circle cx="148.1" cy="145.1" r="5.5"></circle>
+    <circle cx="51.9" cy="145.1" r="5.5"></circle>
+    <circle cx="32" cy="97" r="5.5"></circle>
+    <circle cx="51.9" cy="48.9" r="5.5"></circle>
+  </g>
+
+  
+  <polygon points="100,127 122,117 122,158 100,168" fill="url(#cright)"></polygon>
+  
+  <polygon points="78,117 100,127 100,168 78,158" fill="url(#cleft)"></polygon>
+  
+  <polygon points="100,107 122,117 100,127 78,117" fill="url(#ctop)"></polygon>
+
+  
+  <g stroke="rgba(0,25,55,0.38)" stroke-width="1.5">
+    <line x1="78" y1="136" x2="100" y2="136"></line>
+    <line x1="78" y1="146" x2="100" y2="146"></line>
+    <line x1="78" y1="156" x2="100" y2="156"></line>
+  </g>
+  
+  <g stroke="rgba(0,15,40,0.42)" stroke-width="1.5">
+    <line x1="100" y1="136" x2="122" y2="136"></line>
+    <line x1="100" y1="146" x2="122" y2="146"></line>
+    <line x1="100" y1="156" x2="122" y2="156"></line>
+  </g>
+
+  
+  <circle cx="100" cy="97" r="15" fill="url(#main)"></circle>
+  <circle cx="96" cy="93" r="7" fill="rgba(255,255,255,0.26)"></circle>
+</svg>

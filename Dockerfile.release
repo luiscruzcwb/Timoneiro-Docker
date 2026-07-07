@@ -1,0 +1,10 @@
+FROM alpine:3.19
+RUN apk add --no-cache ca-certificates tzdata curl && \
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+COPY timoneiro /usr/local/bin/timoneiro
+EXPOSE 8080
+VOLUME ["/data"]
+ENV TIMONEIRO_DB_PATH=/data/timoneiro.db \
+    TIMONEIRO_PORT=8080 \
+    TIMONEIRO_CHECK_INTERVAL=300
+ENTRYPOINT ["/usr/local/bin/timoneiro"]

@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Ocean depths palette */
+  --ocean-void:    #03060d;
+  --ocean-deep:    #060d1a;
+  --ocean-surface: #0a1628;
+  --ocean-mid:     #0f2040;
+  --ocean-lift:    #162a52;
+
+  /* Accents */
+  --cyan:    #22d3ee;
+  --cyan-dim: #0891b2;
+  --emerald: #34d399;
+  --amber:   #fbbf24;
+  --coral:   #f87171;
+  --violet:  #a78bfa;
+
+  /* Text */
+  --text-bright:  #e2f0ff;
+  --text-primary: #94b4d4;
+  --text-muted:   #3d5a80;
+  --text-ghost:   #1e3a5f;
+
+  /* Borders */
+  --border-subtle: #0e2040;
+  --border-mid:    #1a3560;
+  --border-active: #22d3ee44;
+}
+
+* { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  margin: 0;
+  height: 100%;
+  background-color: var(--ocean-void);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grid background texture */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 20px -5px #22d3ee44, 0 0 60px -20px #22d3ee22;
+}
+.glow-emerald {
+  box-shadow: 0 0 20px -5px #34d39944;
+}
+.glow-amber {
+  box-shadow: 0 0 20px -5px #fbbf2444;
+}
+.glow-coral {
+  box-shadow: 0 0 20px -5px #f8717144;
+}
+
+/* Text styles */
+.font-display {
+  font-family: 'Sora', sans-serif;
+}
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Animated status dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.8); }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Stagger fade-in for cards */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out forwards;
+  opacity: 0;
+}
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--ocean-void); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Horizontal rule */
+hr { border-color: var(--border-subtle); }

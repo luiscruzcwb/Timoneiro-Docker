@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timoneiro - Gerenciamento Automático de Containers Docker</title>
+  <meta name="description" content="Monitore e atualize seus containers Docker automaticamente. Interface web completa, CVE scan, políticas de atualização e notificações." />
+  <meta property="og:title" content="Timoneiro" />
+  <meta property="og:description" content="Gerenciamento automático de containers Docker com interface web completa." />
+  <meta property="og:image" content="https://luiscruzcwb.github.io/timoneiro/og.png" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="28" height="28">
+        <defs>
+          <linearGradient id="nm" x1="5%" y1="5%" x2="95%" y2="95%"><stop offset="0%" stop-color="#5EECFF"/><stop offset="45%" stop-color="#22D3EE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient>
+          <linearGradient id="nct" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93E4FF"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient>
+          <linearGradient id="ncl" x1="0%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#0EA5E9"/><stop offset="100%" stop-color="#0C4A6E"/></linearGradient>
+          <linearGradient id="ncr" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0284C7"/><stop offset="100%" stop-color="#072F4A"/></linearGradient>
+        </defs>
+        <circle cx="100" cy="97" r="58" fill="none" stroke="url(#nm)" stroke-width="9"/>
+        <g stroke="url(#nm)" stroke-width="6.5" stroke-linecap="round">
+          <line x1="100" y1="81" x2="100" y2="39"/><line x1="111.3" y1="85.7" x2="141" y2="56"/>
+          <line x1="116" y1="97" x2="158" y2="97"/><line x1="111.3" y1="108.3" x2="141" y2="138"/>
+          <line x1="100" y1="113" x2="100" y2="155"/><line x1="88.7" y1="108.3" x2="59" y2="138"/>
+          <line x1="84" y1="97" x2="42" y2="97"/><line x1="88.7" y1="85.7" x2="59" y2="56"/>
+        </g>
+        <g fill="url(#nm)">
+          <circle cx="100" cy="29" r="5.5"/><circle cx="148.1" cy="48.9" r="5.5"/>
+          <circle cx="168" cy="97" r="5.5"/><circle cx="148.1" cy="145.1" r="5.5"/>
+          <circle cx="51.9" cy="145.1" r="5.5"/><circle cx="32" cy="97" r="5.5"/>
+          <circle cx="51.9" cy="48.9" r="5.5"/>
+        </g>
+        <polygon points="100,127 122,117 122,158 100,168" fill="url(#ncr)"/>
+        <polygon points="78,117 100,127 100,168 78,158" fill="url(#ncl)"/>
+        <polygon points="100,107 122,117 100,127 78,117" fill="url(#nct)"/>
+        <circle cx="100" cy="97" r="15" fill="url(#nm)"/>
+        <circle cx="96" cy="93" r="7" fill="rgba(255,255,255,0.26)"/>
+      </svg>
+      <span class="nav-name">Timoneiro</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="nav-link">Inicio Rapido</a>
+      <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs" class="nav-link">Documentacao</a>
+      <a href="https://github.com/luiscruzcwb/timoneiro/releases" class="nav-link">Releases</a>
+    </div>
+
+    <div class="nav-actions">
+      <a href="https://github.com/luiscruzcwb/timoneiro" class="nav-github" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub
+      </a>
+    </div>
+
+    <button class="nav-burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="nav-mobile" id="mobile-menu">
+    <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Inicio Rapido</a>
+    <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs">Documentacao</a>
+    <a href="https://github.com/luiscruzcwb/timoneiro/releases">Releases</a>
+    <a href="https://github.com/luiscruzcwb/timoneiro">GitHub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Open Source · MIT License
+        </div>
+        <h1 class="hero-title">
+          Gerenciamento <span class="accent">automatico</span><br />
+          de containers Docker
+        </h1>
+        <p class="hero-tagline">Mantendo seus containers no rumo certo.</p>
+        <p class="hero-sub">
+          Monitore, atualize e proteja containers Docker com automacao completa, interface web e CVE scan integrado.
+        </p>
+        <div class="hero-actions">
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="btn-primary">
+            Inicio Rapido
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          </a>
+          <a href="https://github.com/luiscruzcwb/timoneiro" class="btn-outline" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Ver no GitHub
+          </a>
+        </div>
+        <div class="hero-install">
+          <span class="install-label">docker run</span>
+          <code class="install-code">-d -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/luiscruzcwb/timoneiro</code>
+          <button class="copy-btn" onclick="copyInstall(this)" title="Copiar comando">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="browser-mock">
+          <div class="browser-chrome">
+            <div class="browser-dots">
+              <span class="browser-dot red"></span>
+              <span class="browser-dot yellow"></span>
+              <span class="browser-dot green"></span>
+            </div>
+            <div class="browser-url-bar">
+              <span class="browser-lock">
+                <svg viewBox="0 0 12 12" fill="currentColor" width="10" height="10"><path d="M9 5V3.5a3 3 0 00-6 0V5H2v6h8V5H9zm-4-1.5a1 1 0 012 0V5H5V3.5z"/></svg>
+              </span>
+              <span class="browser-url">localhost:8080/containers</span>
+            </div>
+          </div>
+          <div class="browser-body">
+            <div class="mock-stats">
+              <div class="mock-stat">
+                <span class="stat-num cyan">12</span>
+                <span class="stat-lbl">Containers</span>
+              </div>
+              <div class="mock-stat">
+                <span class="stat-num emerald">9</span>
+                <span class="stat-lbl">Atualizados</span>
+              </div>
+              <div class="mock-stat">
+                <span class="stat-num amber">2</span>
+                <span class="stat-lbl">Pendentes</span>
+              </div>
+              <div class="mock-stat">
+                <span class="stat-num coral">0</span>
+                <span class="stat-lbl">Falhas</span>
+              </div>
+            </div>
+            <div class="mock-list">
+              <div class="mock-row">
+                <span class="mock-status-dot" style="background:#34d399"></span>
+                <span class="mock-name">nginx</span>
+                <span class="mock-tag">1.27.4</span>
+                <span class="mock-badge up">up-to-date</span>
+              </div>
+              <div class="mock-row highlight">
+                <span class="mock-status-dot" style="background:#22d3ee"></span>
+                <span class="mock-name">postgres</span>
+                <span class="mock-tag new">17.3 → 17.4</span>
+                <span class="mock-badge avail">disponivel</span>
+              </div>
+              <div class="mock-row">
+                <span class="mock-status-dot" style="background:#34d399"></span>
+                <span class="mock-name">redis</span>
+                <span class="mock-tag">7.4.2</span>
+                <span class="mock-badge up">up-to-date</span>
+              </div>
+              <div class="mock-row highlight">
+                <span class="mock-status-dot" style="background:#22d3ee"></span>
+                <span class="mock-name">traefik</span>
+                <span class="mock-tag new">3.2.1 → 3.3.0</span>
+                <span class="mock-badge avail">disponivel</span>
+              </div>
+              <div class="mock-row">
+                <span class="mock-status-dot" style="background:#34d399"></span>
+                <span class="mock-name">grafana</span>
+                <span class="mock-tag">11.4.0</span>
+                <span class="mock-badge up">up-to-date</span>
+              </div>
+            </div>
+            <div class="mock-footer">
+              <div class="mock-status-line">
+                <span class="mock-live-dot"></span>
+                Monitorando · verificado 4s atras
+              </div>
+              <span class="mock-ws-badge">WS</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-glow-2"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title">Tudo que voce precisa</h2>
+      <p class="section-sub">Projetado para ser simples de instalar e poderoso em producao.</p>
+    </div>
+
+    <div class="features-bento">
+
+      <!-- Wide: Interface Web -->
+      <div class="feature-card wide reveal">
+        <div class="feature-icon emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3>Interface web completa</h3>
+        <p>Dashboard com status em tempo real via WebSocket, historico de atualizacoes, aprovacao manual e rollback com um clique. Sem linha de comando necessaria para o dia a dia.</p>
+      </div>
+
+      <!-- Normal: Leve -->
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Leve</h3>
+        <p>Binario unico em Go, imagem Docker abaixo de 30 MB. Roda confortavelmente em um Raspberry Pi.</p>
+      </div>
+
+      <!-- Normal: Multi-Ambiente -->
+      <div class="feature-card reveal">
+        <div class="feature-icon cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h3>Multi-ambiente</h3>
+        <p>Monitore hosts Docker remotos via TCP, socket Unix ou agente Timoneiro leve. Toda a infraestrutura em um painel.</p>
+      </div>
+
+      <!-- Normal: Registries -->
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3>Registries privados</h3>
+        <p>Docker Hub, GHCR e qualquer registry OCI: Harbor, Nexus, Gitea. Credenciais armazenadas localmente.</p>
+      </div>
+
+      <!-- Normal: Notificações -->
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <h3>Notificacoes</h3>
+        <p>Discord, Telegram, Slack, SMTP, Gotify, ntfy e qualquer servico Shoutrrr. Multiplos canais simultaneos.</p>
+      </div>
+
+      <!-- Normal: Segurança -->
+      <div class="feature-card reveal">
+        <div class="feature-icon cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>CVE scan</h3>
+        <p>Integracao com Trivy para detectar vulnerabilidades em novas versoes antes de aplicar atualizacoes.</p>
+      </div>
+
+      <!-- Wide: Políticas -->
+      <div class="feature-card wide reveal reveal-delay-1">
+        <div class="feature-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Politicas de atualizacao</h3>
+        <p>Modos Manual, Automatico e Agendado. Janelas de manutencao por dia e horario. Excecoes por container ou por stack Compose. Nenhuma atualizacao surpresa em producao.</p>
+      </div>
+
+      <!-- Full: API REST -->
+      <div class="feature-card full reveal">
+        <div class="feature-inner">
+          <div>
+            <div class="feature-icon emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <h3>API REST + WebSocket</h3>
+            <p>API completa para automacao e integracao com pipelines CI/CD. WebSocket para eventos em tempo real. O mesmo endpoint que a interface web usa.</p>
+          </div>
+          <div class="feature-terminal" aria-label="Exemplo de uso da API">
+            <span class="t-comment"># Listar containers com atualizacoes disponíveis</span><br />
+            <span class="t-cyan">GET</span> <span class="t-url">/api/containers?status=update_available</span><br /><br />
+            <span class="t-comment"># Receber eventos em tempo real</span><br />
+            <span class="t-cyan">WS</span>  <span class="t-url">ws://localhost:8080/ws</span><br />
+            <span class="t-key">"type"</span><span style="color:#94b4d4">: </span><span class="t-string">"update.available"</span><span style="color:#94b4d4">, </span><span class="t-key">"container"</span><span style="color:#94b4d4">: </span><span class="t-string">"postgres"</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="howto" id="howto">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title">Em funcionamento em minutos</h2>
+      <p class="section-sub">Sem configuracao complexa. Aponte para o socket Docker e pronto.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Instale o Timoneiro</h3>
+          <p>Execute com Docker Run ou Compose. Monte o socket do Docker e um volume para persistencia.</p>
+          <div class="code-block">
+            <code>docker run -d \
+  --name timoneiro \
+  -p 8080:8080 \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v timoneiro_data:/data \
+  ghcr.io/luiscruzcwb/timoneiro</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Acesse a interface</h3>
+          <p>Abra <strong>http://localhost:8080</strong> no navegador. O Timoneiro descobre automaticamente todos os containers em execucao.</p>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Configure as politicas</h3>
+          <p>Escolha o modo de atualizacao (Manual, Automatico ou Agendado), defina janelas de manutencao e configure os canais de notificacao.</p>
+        </div>
+      </div>
+
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Relaxe</h3>
+          <p>O Timoneiro monitora seus registries e mantém seus containers atualizados, ou te avisa quando ha algo novo para revisar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="container">
+    <div class="cta-inner reveal">
+      <h2 class="cta-title">Pronto para<br /><span class="accent">comecar?</span></h2>
+      <p class="cta-sub">Open source, gratuito, sem dependencias externas.</p>
+      <div class="cta-actions">
+        <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="btn-primary">
+          Ver documentacao
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </a>
+        <a href="https://github.com/luiscruzcwb/timoneiro" class="btn-outline" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="22" height="22">
+            <defs>
+              <linearGradient id="fm" x1="5%" y1="5%" x2="95%" y2="95%"><stop offset="0%" stop-color="#5EECFF"/><stop offset="45%" stop-color="#22D3EE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient>
+              <linearGradient id="fct" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93E4FF"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient>
+              <linearGradient id="fcl" x1="0%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#0EA5E9"/><stop offset="100%" stop-color="#0C4A6E"/></linearGradient>
+              <linearGradient id="fcr" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0284C7"/><stop offset="100%" stop-color="#072F4A"/></linearGradient>
+            </defs>
+            <circle cx="100" cy="97" r="58" fill="none" stroke="url(#fm)" stroke-width="9"/>
+            <g stroke="url(#fm)" stroke-width="6.5" stroke-linecap="round">
+              <line x1="100" y1="81" x2="100" y2="39"/><line x1="111.3" y1="85.7" x2="141" y2="56"/>
+              <line x1="116" y1="97" x2="158" y2="97"/><line x1="111.3" y1="108.3" x2="141" y2="138"/>
+              <line x1="100" y1="113" x2="100" y2="155"/><line x1="88.7" y1="108.3" x2="59" y2="138"/>
+              <line x1="84" y1="97" x2="42" y2="97"/><line x1="88.7" y1="85.7" x2="59" y2="56"/>
+            </g>
+            <g fill="url(#fm)"><circle cx="100" cy="29" r="5.5"/><circle cx="148.1" cy="48.9" r="5.5"/><circle cx="168" cy="97" r="5.5"/><circle cx="148.1" cy="145.1" r="5.5"/><circle cx="51.9" cy="145.1" r="5.5"/><circle cx="32" cy="97" r="5.5"/><circle cx="51.9" cy="48.9" r="5.5"/></g>
+            <polygon points="100,127 122,117 122,158 100,168" fill="url(#fcr)"/>
+            <polygon points="78,117 100,127 100,168 78,158" fill="url(#fcl)"/>
+            <polygon points="100,107 122,117 100,127 78,117" fill="url(#fct)"/>
+            <circle cx="100" cy="97" r="15" fill="url(#fm)"/>
+            <circle cx="96" cy="93" r="7" fill="rgba(255,255,255,0.26)"/>
+          </svg>
+          <span class="nav-name">Timoneiro</span>
+        </a>
+        <p class="footer-tagline">Mantendo seus containers no rumo certo.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <span class="footer-col-title">Documentacao</span>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Inicio Rapido</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/configuration.md">Configuracao</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/environments.md">Ambientes</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/update-policies.md">Politicas</a>
+        </div>
+        <div class="footer-col">
+          <span class="footer-col-title">Projeto</span>
+          <a href="https://github.com/luiscruzcwb/timoneiro">GitHub</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/releases">Releases</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/issues">Problemas</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/CONTRIBUTING.md">Contribuir</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Timoneiro is released under the <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/LICENSE.md">MIT License</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // Mobile menu
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  burger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    burger.classList.toggle('open');
+  });
+
+  // Scroll reveal
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // Spotlight on feature cards
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    });
+  });
+
+  // Copy install command
+  function copyInstall(btn) {
+    const code = btn.previousElementSibling.textContent;
+    const full = 'docker run ' + code.trim();
+    navigator.clipboard.writeText(full).then(() => {
+      btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+      setTimeout(() => {
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

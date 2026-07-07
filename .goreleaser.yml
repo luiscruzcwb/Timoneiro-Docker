@@ -1,0 +1,149 @@
+version: 2
+
+before:
+  hooks:
+    - npm --prefix web ci
+    - npm --prefix web run build
+
+builds:
+  - id: timoneiro
+    main: ./cmd/timoneiro
+    binary: timoneiro
+    env:
+      - CGO_ENABLED=1
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+    overrides:
+      - goos: linux
+        goarch: arm64
+        env:
+          - CGO_ENABLED=1
+          - CC=zig cc -target aarch64-linux-musl
+          - CXX=zig c++ -target aarch64-linux-musl
+
+  - id: timoneiro-agent
+    main: ./cmd/agent
+    binary: timoneiro-agent
+    env:
+      - CGO_ENABLED=0
+    goos: [linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+
+archives:
+  - id: timoneiro-archive
+    ids: [timoneiro]
+    name_template: "timoneiro_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE.md
+
+  - id: agent-archive
+    ids: [timoneiro-agent]
+    name_template: "timoneiro-agent_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE.md
+
+checksum:
+  name_template: "checksums.txt"
+
+dockers:
+  - id: timoneiro-amd64
+    ids: [timoneiro]
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-amd64"
+    dockerfile: Dockerfile.release
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/luiscruzcwb/Timoneiro"
+
+  - id: timoneiro-arm64
+    ids: [timoneiro]
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-arm64"
+    dockerfile: Dockerfile.release
+    use: buildx
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/luiscruzcwb/Timoneiro"
+
+  - id: agent-amd64
+    ids: [timoneiro-agent]
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-amd64"
+    dockerfile: Dockerfile.release.agent
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/luiscruzcwb/Timoneiro"
+
+  - id: agent-arm64
+    ids: [timoneiro-agent]
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-arm64"
+    dockerfile: Dockerfile.release.agent
+    use: buildx
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/luiscruzcwb/Timoneiro"
+
+docker_manifests:
+  - name_template: "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-amd64"
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/luiscruzcwb/timoneiro:{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-amd64"
+      - "ghcr.io/luiscruzcwb/timoneiro:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-amd64"
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-arm64"
+
+  - name_template: "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-amd64"
+      - "ghcr.io/luiscruzcwb/timoneiro-agent:{{ .Version }}-arm64"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^chore\\(deps\\)"
+      - "Merge pull request"
+      - "Merge branch"
+  groups:
+    - title: "Novas Funcionalidades"
+      regexp: "^feat"
+      order: 0
+    - title: "Correções"
+      regexp: "^fix"
+      order: 1
+    - title: "Documentação"
+      regexp: "^docs"
+      order: 2
+    - title: "Outros"
+      order: 999
+
+release:
+  github:
+    owner: luiscruzcwb
+    name: Timoneiro
+  draft: false
+  prerelease: auto
+  name_template: "v{{ .Version }}"

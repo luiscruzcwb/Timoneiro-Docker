@@ -1,0 +1,507 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "test": "Testar",
+    "close": "Fechar",
+    "loading": "Carregando…",
+    "search": "Buscar",
+    "actions": "Ações",
+    "status": "Status",
+    "name": "Nome",
+    "type": "Tipo",
+    "confirm": "Confirmar",
+    "copy": "Copiar",
+    "failed": "falha",
+    "statusBadge": {
+      "up_to_date": "Atualizado",
+      "update_available": "Pendente",
+      "updating": "Atualizando",
+      "failed": "Com falha",
+      "local": "Local",
+      "unknown": "Desconhecido"
+    }
+  },
+  "nav": {
+    "dashboard": "Visão Geral",
+    "containers": "Containers",
+    "updates": "Atualizações",
+    "security": "Segurança",
+    "registries": "Registries",
+    "audit": "Auditoria",
+    "policies": "Políticas",
+    "settings": "Configurações",
+    "login": "Entrar",
+    "logout": "Sair",
+    "changeLanguage": "Idioma",
+    "loggedInAs": "Conectado como"
+  },
+  "auth": {
+    "tagline": "Ponte de Comando",
+    "loginComment": "// autenticação",
+    "loginTitle": "Entrar",
+    "username": "Usuário",
+    "password": "Senha",
+    "loggingIn": "Entrando…",
+    "loginButton": "Entrar",
+    "setupComment": "// primeiro acesso",
+    "setupTitle": "Criar conta de administrador",
+    "setupSubtitle": "Essa será a única conta com acesso ao painel. Guarde a senha em local seguro.",
+    "confirmPassword": "Confirmar senha",
+    "creating": "Criando…",
+    "createAccount": "Criar conta",
+    "errors": {
+      "loginFailed": "Falha ao entrar",
+      "setupFailed": "Falha ao criar conta",
+      "passwordTooShort": "A senha deve ter ao menos 8 caracteres",
+      "passwordMismatch": "As senhas não coincidem"
+    },
+    "toasts": {
+      "accountCreated": "Conta de administrador criada"
+    }
+  },
+  "dashboard": {
+    "slug": "visão geral",
+    "title": "Visão Geral",
+    "subtitle": "Monitoramento da sua Infraestrutura",
+    "checkNow": "Verificar agora",
+    "checking": "Verificando…",
+    "toasts": {
+      "checkStarted": "Verificação iniciada",
+      "checkFailed": "Falha ao iniciar verificação"
+    },
+    "stats": {
+      "containers": "Containers",
+      "environments_one": "{{count}} ambiente",
+      "environments_other": "{{count}} ambientes",
+      "updated": "Atualizados",
+      "ofMonitored": "de {{count}} monitorados",
+      "recent": "Recentes",
+      "recentSub": "atualizações",
+      "available": "Disponíveis",
+      "availableSub": "para atualizar",
+      "vulnerabilities": "Vulnerabilidades",
+      "vulnerabilitiesSub": "containers",
+      "success": "Sucesso",
+      "noHistory": "sem histórico",
+      "ofTotal": "{{success}} de {{total}}"
+    },
+    "donut": {
+      "title": "Status das Atualizações",
+      "total": "TOTAL",
+      "viewAll": "Ver todas as atualizações",
+      "labels": {
+        "upToDate": "Atualizados",
+        "updateAvailable": "Disponíveis",
+        "failed": "Com falha",
+        "local": "Local",
+        "unknown": "Desconhecido"
+      }
+    },
+    "automation": {
+      "title": "Automação",
+      "tooltip": "atualizações",
+      "pending": "Pendentes",
+      "success": "Sucesso",
+      "failures": "Falhas",
+      "rolledBack": "Revertidos"
+    },
+    "events": {
+      "title": "Eventos Recentes",
+      "empty": "// nenhum evento ainda",
+      "viewAudit": "Ver auditoria completa",
+      "updateCompleted": "Atualização concluída",
+      "rollbackDone": "Rollback executado",
+      "updateFailed": "Falha na atualização"
+    },
+    "table": {
+      "title": "Containers Monitorados",
+      "viewAll": "ver todos",
+      "empty": "// nenhum container monitorado",
+      "columns": {
+        "container": "Container",
+        "image": "Imagem",
+        "status": "Status",
+        "nextCheck": "Próx. Verificação",
+        "action": "Ação"
+      },
+      "local": "Local",
+      "update": "ATUALIZAR",
+      "pageRange": "{{from}}–{{to}} de {{total}}"
+    }
+  },
+  "containers": {
+    "slug": "containers",
+    "title": "Containers",
+    "subtitle_one": "{{filtered}} de {{count}} container",
+    "subtitle_other": "{{filtered}} de {{count}} containers",
+    "refreshing": "atualizando…",
+    "checkNow": "Verificar agora",
+    "checking": "Verificando…",
+    "searchPlaceholder": "Buscar por nome ou imagem…",
+    "filters": {
+      "all": "Todos",
+      "pending": "Pendente",
+      "failed": "Com falha"
+    },
+    "table": {
+      "container": "Container",
+      "image": "Imagem",
+      "status": "Status",
+      "environment": "Ambiente",
+      "checked": "Verificado",
+      "updated": "Atualizado",
+      "cve": "CVE"
+    },
+    "empty": {
+      "noResults": "Nenhum resultado para \"{{query}}\"",
+      "none": "Nenhum container encontrado"
+    },
+    "actions": {
+      "update": "Atualizar",
+      "updating": "Atualizando…",
+      "rollback": "Reverter",
+      "rollingBack": "Revertendo…",
+      "cveDetected": "CVEs detectados"
+    },
+    "toasts": {
+      "updating": "{{name}} está sendo atualizado",
+      "updateFailed": "Falha ao atualizar {{name}}",
+      "rolledBack": "{{name}} revertido com sucesso",
+      "rollbackFailed": "Falha ao reverter {{name}}",
+      "checkStarted": "Verificação iniciada",
+      "checkFailed": "Falha ao iniciar verificação"
+    }
+  },
+  "updates": {
+    "slug": "fila de atualizações",
+    "title": "Atualizações",
+    "subtitlePending": "{{count}} aguardando aprovação",
+    "criticalCves": "· {{count}} com CVEs críticos",
+    "checkNow": "Verificar agora",
+    "checking": "Verificando…",
+    "statusLabel": {
+      "pending": "Pendente",
+      "approved": "Aprovado",
+      "deploying": "Implantando",
+      "deployed": "Concluído",
+      "ignored": "Ignorado",
+      "failed": "Com falha",
+      "all": "Todos"
+    },
+    "cve": {
+      "critical": "CRÍTICA",
+      "high": "ALTA",
+      "medium": "MÉDIA",
+      "low": "BAIXA",
+      "none": "sem CVEs",
+      "criticalBanner": "VULNERABILIDADES CRÍTICAS DETECTADAS"
+    },
+    "digest": "DIGEST",
+    "notes": {
+      "label": "OBSERVAÇÕES",
+      "placeholder": "Adicionar observações, motivo da atualização, riscos identificados…",
+      "saved": "salvo {{time}}",
+      "charCount": "{{count}} caracteres",
+      "freeform": "campo livre para registro de contexto",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "toasts": {
+        "saved": "Observações salvas",
+        "failed": "Falha ao salvar observações"
+      }
+    },
+    "actions": {
+      "approveDeploy": "Aprovar & Implantar",
+      "ignore": "Ignorar",
+      "approveHint": "aprovar implanta imediatamente"
+    },
+    "hint": "// clique em qualquer card para expandir detalhes, CVEs e observações",
+    "empty": {
+      "noPending": "Nenhuma atualização pendente",
+      "noStatus": "Nenhum item com status \"{{status}}\"",
+      "allUpdated": "Todos os containers estão atualizados.",
+      "tryDifferent": "Tente um filtro diferente."
+    },
+    "unknownEnv": "Desconhecido",
+    "toasts": {
+      "checkStarted": "Verificação iniciada",
+      "checkFailed": "Falha ao iniciar verificação",
+      "approved": "Atualização aprovada — implantando",
+      "approveFailed": "Falha ao aprovar atualização",
+      "ignored": "Atualização ignorada",
+      "ignoreFailed": "Falha ao ignorar atualização"
+    }
+  },
+  "security": {
+    "slug": "segurança",
+    "title": "Segurança",
+    "subtitle": "Vulnerabilidades detectadas via Trivy · clique em um container para ver os CVEs individuais",
+    "severities": {
+      "critical": "Crítica",
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa"
+    },
+    "imageAge": "imagem: {{age}}",
+    "detected": "detectado {{age}}",
+    "total": "{{count}} total",
+    "noCveData": "// dados de CVE não disponíveis — aguarde próximo scan do Trivy",
+    "cveTableHeader": "CVE · PACOTE · DESCRIÇÃO",
+    "empty": {
+      "title": "Nenhuma vulnerabilidade detectada",
+      "subtitle": "Todos os containers monitorados estão limpos."
+    },
+    "hint_one": "// {{count}} container com vulnerabilidades — clique para expandir",
+    "hint_other": "// {{count}} containers com vulnerabilidades — clique para expandir"
+  },
+  "registries": {
+    "slug": "registries",
+    "title": "Registries",
+    "subtitle": "Credenciais para registries privados — usadas automaticamente pelo engine",
+    "add": "Adicionar",
+    "empty": {
+      "title": "Nenhum registry configurado",
+      "subtitle": "Adicione credenciais para acessar imagens privadas"
+    },
+    "types": {
+      "dockerhub": "Docker Hub",
+      "ghcr": "GitHub GHCR",
+      "generic": "Registry Genérico"
+    },
+    "hostLabels": {
+      "dockerhub": "index.docker.io (automático)",
+      "ghcr": "ghcr.io (automático)",
+      "generic": "Ex: my-registry.example.com:5000"
+    },
+    "user": "user: {{username}}",
+    "panel": {
+      "editTitle": "Editar Registry",
+      "addTitle": "Adicionar Registry",
+      "type": "Tipo",
+      "name": "Nome (opcional)",
+      "host": "Host / URL",
+      "hostGeneric": "Host",
+      "username": "Username",
+      "usernameGhcr": "Username (GitHub)",
+      "usernamePlaceholder": "seu-usuario",
+      "password": "Senha / Token",
+      "passwordGhcr": "Personal Access Token",
+      "passwordDockerhub": "Access Token",
+      "passwordKeepCurrent": "(manter atual)",
+      "testConnection": "Testar conexão",
+      "cancel": "Cancelar",
+      "save": "Salvar"
+    }
+  },
+  "audit": {
+    "slug": "auditoria",
+    "title": "Auditoria",
+    "loading": "Carregando…",
+    "subtitle_one": "{{count}} evento registrado",
+    "subtitle_other": "{{count}} eventos registrados",
+    "status": {
+      "success": "Sucesso",
+      "failed": "Falhou",
+      "rolled_back": "Revertido"
+    },
+    "digestUpdated": "digest atualizado",
+    "envFallback": "env #{{id}}",
+    "empty": {
+      "title": "Nenhum evento registrado",
+      "subtitle": "O histórico de atualizações aparecerá aqui."
+    }
+  },
+  "policies": {
+    "slug": "políticas",
+    "title": "Políticas de Atualização",
+    "subtitle": "Defina como, quando e o que atualizar — globalmente ou por container",
+    "days": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+    "allDays": "Todos os dias",
+    "noDays": "Nenhum dia",
+    "noItems": "Nenhum item",
+    "exceptionModes": {
+      "automatic": "Automática",
+      "manual": "Manual",
+      "scheduled": "Agendada",
+      "skip": "Ignorar"
+    },
+    "modeBadge": {
+      "automatic": "automática",
+      "manual": "manual",
+      "scheduled": "agendada",
+      "skip": "ignorar"
+    },
+    "section1": {
+      "num": "1",
+      "title": "Como atualizar",
+      "modes": {
+        "automatic": { "label": "Automática", "desc": "Atualiza assim que detecta nova versão" },
+        "manual": { "label": "Manual", "desc": "Você aprova cada atualização individualmente" },
+        "scheduled": { "label": "Agendada", "desc": "Só atualiza dentro das janelas de manutenção" }
+      },
+      "active": "ATIVO",
+      "whichVersions": "Quais versões atualizar",
+      "manualHint": "// no modo Manual você decide caso a caso — estes filtros não se aplicam",
+      "autoHint": "// desative versões que não quer atualizar automaticamente",
+      "major": { "name": "Major", "example": "1.x → 2.x", "hint": "mudanças incompatíveis — cuidado" },
+      "minor": { "name": "Minor", "example": "1.1 → 1.2", "hint": "novos recursos, retrocompatível" },
+      "patch": { "name": "Patch", "example": "1.1.1 → 1.1.2", "hint": "correções de bugs e segurança" }
+    },
+    "section2": {
+      "num": "2",
+      "title": "Exceções",
+      "subtitle": "containers ou stacks com política diferente da global",
+      "add": "Adicionar",
+      "tabContainer": "Por Container",
+      "tabStack": "Por Stack",
+      "contFormHint": "// escolha o container e a política que ele vai seguir",
+      "container": "Container",
+      "selectPlaceholder": "Selecione…",
+      "policy": "Política",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "stackFormHint": "// nome do projeto docker compose (label com.docker.compose.project)",
+      "stackName": "Nome da Stack",
+      "stackPlaceholder": "Ex: app-production",
+      "emptyContainerTitle": "Sem exceções por container",
+      "emptyContainerSubtitle": "Todos os containers seguem a política global",
+      "emptyStackTitle": "Sem exceções por stack",
+      "emptyStackSubtitle": "Stacks são projetos docker compose",
+      "dockerComposeProject": "docker compose project"
+    },
+    "section3": {
+      "num": "3",
+      "title": "Janelas de Manutenção",
+      "subtitle": "períodos em que atualizações agendadas são permitidas",
+      "newWindow": "Nova janela",
+      "scheduleWarning": "Janelas de manutenção só têm efeito no modo",
+      "scheduleWarningSuffix": "Clique para ativar.",
+      "scheduledModeName": "Agendada",
+      "windowName": "Nome da janela",
+      "windowNamePlaceholder": "Ex: Madrugada de domingo",
+      "scope": "Escopo — quem é afetado?",
+      "scopeAll": "Todos",
+      "scopeEnv": "Por ambiente",
+      "scopeContainers": "Por container",
+      "environments": "Ambientes",
+      "noEnv": "Nenhum ambiente cadastrado",
+      "containers": "Containers",
+      "noContainers": "Nenhum container disponível",
+      "weekdays": "Dias da semana",
+      "start": "Início",
+      "end": "Término",
+      "emptyTitle": "Nenhuma janela configurada",
+      "emptySubtitle": "Adicione uma janela para definir quando as atualizações rodam",
+      "scopeLabel": "escopo: {{scope}}",
+      "allEnvironments": "todos os ambientes",
+      "nextOccurrence": "próxima: {{when}}",
+      "active": "ativa",
+      "inactive": "inativa",
+      "removeConfirm": "Remover \"{{name}}\"?"
+    }
+  },
+  "settings": {
+    "slug": "configurações",
+    "title": "Configurações",
+    "subtitle": "Ambientes, notificações e preferências do sistema",
+    "account": {
+      "comment": "// autenticação",
+      "title": "Conta",
+      "loggedInAs": "Conectado como",
+      "logout": "Sair",
+      "currentPassword": "Senha atual",
+      "newPassword": "Nova senha",
+      "confirmNewPassword": "Confirmar nova senha",
+      "changePassword": "Alterar senha",
+      "changing": "Alterando…",
+      "toasts": {
+        "changed": "Senha alterada. Faça login novamente.",
+        "newPasswordTooShort": "A nova senha deve ter ao menos 8 caracteres",
+        "mismatch": "As senhas não coincidem",
+        "failed": "Falha ao alterar senha"
+      }
+    },
+    "environments": {
+      "comment": "// ambientes",
+      "title": "Ambientes",
+      "types": {
+        "socket": { "label": "Socket Local", "desc": "Docker no mesmo host via /var/run/docker.sock" },
+        "tcp": { "label": "TCP Remoto", "desc": "Docker com TCP exposto (ex: tcp://192.168.1.x:2376)" },
+        "agent": { "label": "Agente", "desc": "timoneiro-agent instalado no servidor remoto" }
+      },
+      "agentAddress": "Endereço do Agente",
+      "dockerHost": "Docker Host",
+      "name": "Nome",
+      "token": "Token",
+      "cancel": "CANCELAR",
+      "save": "SALVAR",
+      "step1": "// PASSO 1 — TIPO DE CONEXÃO",
+      "step2": "// PASSO 2 — CONFIGURAÇÃO",
+      "envName": "Nome do Ambiente",
+      "envNamePlaceholderAgent": "Produção — VPS Berlin",
+      "envNamePlaceholderLocal": "Local",
+      "authToken": "Token de Autenticação",
+      "generateNewToken": "Gerar novo token",
+      "runOnRemote": "Execute no servidor remoto",
+      "agentAddressPlaceholder": "192.168.18.152:1895",
+      "dockerHostPlaceholderSocket": "unix:///var/run/docker.sock",
+      "dockerHostPlaceholderTcp": "tcp://192.168.1.100:2376",
+      "testConnection": "TESTAR CONEXÃO",
+      "add": "ADICIONAR",
+      "removeConfirm": "Remover \"{{name}}\"?"
+    },
+    "notifications": {
+      "comment": "// notificações · via Shoutrrr",
+      "title": "Notificações",
+      "channelName": "Nome do canal",
+      "channelNameSuffix": "alertas",
+      "cancel": "CANCELAR",
+      "save": "SALVAR",
+      "sent": "enviado",
+      "failed": "falhou",
+      "test": "TESTAR",
+      "editChannel": "Editar canal",
+      "removeConfirm": "Remover \"{{name}}\"?",
+      "service": "// SERVIÇO",
+      "moreServices": "menos serviços",
+      "othersCount_one": "+ {{count}} outro serviço",
+      "othersCount_other": "+ {{count}} outros serviços",
+      "generatedUrl": "// URL gerada",
+      "saveButton": "Salvar",
+      "saveAndTest": "Salvar e testar",
+      "shoutrrrUrl": "URL Shoutrrr",
+      "smtp": {
+        "namePlaceholder": "Alertas por e-mail",
+        "server": "Servidor SMTP",
+        "serverPlaceholder": "smtp.gmail.com",
+        "encryption": "Criptografia",
+        "none": "Nenhuma",
+        "port": "Porta",
+        "user": "Usuário",
+        "userPlaceholder": "seu@email.com",
+        "pass": "Senha / App Password",
+        "from": "Remetente (from)",
+        "fromPlaceholder": "timoneiro@dominio.com",
+        "to": "Destinatário(s) — vírgula para múltiplos",
+        "toPlaceholder": "admin@empresa.com"
+      },
+      "raw": {
+        "urlLabel": "URL Shoutrrr —",
+        "docs": "docs ↗"
+      },
+      "services": {
+        "discord": { "description": "Envia mensagens via webhook do Discord", "webhookUrl": "Webhook URL", "webhookHint": "Configurações do servidor → Integrações → Webhooks → Copiar URL" },
+        "telegram": { "description": "Bot do Telegram envia mensagens para um grupo ou canal", "token": "Token do Bot", "tokenHint": "Crie um bot com @BotFather e copie o token", "chatId": "Chat ID", "chatIdHint": "ID do grupo/canal. Adicione @userinfobot ao grupo para descobrir" },
+        "slack": { "description": "Mensagens via Incoming Webhook do Slack", "webhookUrl": "Incoming Webhook URL", "webhookHint": "Slack App → Incoming Webhooks → Copiar URL do webhook" },
+        "smtp": { "description": "Envio de e-mail via servidor SMTP" },
+        "gotify": { "description": "Notificações via servidor Gotify self-hosted", "server": "Servidor", "serverHint": "Sem http:// — apenas o hostname ou IP:porta", "token": "App Token", "tokenHint": "Criado na interface do Gotify em Apps" },
+        "ntfy": { "description": "Notificações push via ntfy.sh ou self-hosted", "topic": "Tópico", "topicHint": "Nome único do tópico — qualquer string sem espaços", "server": "Servidor (opcional)", "serverHint": "Deixe vazio para usar ntfy.sh público, ou informe seu servidor" },
+        "webhook": { "description": "HTTP POST genérico para qualquer URL", "url": "URL do Webhook" }
+      }
+    }
+  }
+}
