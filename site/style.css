@@ -121,6 +121,26 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-github:hover { border-color: var(--border); color: var(--text); background: rgba(255,255,255,0.04); }
 
+.nav-lang {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-2);
+}
+.nav-lang a {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  transition: color 0.2s, background 0.2s;
+}
+.nav-lang a:hover { color: var(--text); }
+.nav-lang a.active { color: var(--cyan); background: var(--cyan-dim); }
+
 .nav-burger {
   display: none;
   flex-direction: column;

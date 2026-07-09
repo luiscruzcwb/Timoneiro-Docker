@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Timoneiro - Gerenciamento Automático de Containers Docker</title>
-  <meta name="description" content="Monitore e atualize seus containers Docker automaticamente. Interface web completa, CVE scan, políticas de atualização e notificações." />
+  <title>Timoneiro - Automatic Docker Container Management</title>
+  <meta name="description" content="Monitor and update your Docker containers automatically. Full web UI, CVE scanning, update policies, and notifications." />
   <meta property="og:title" content="Timoneiro" />
-  <meta property="og:description" content="Gerenciamento automático de containers Docker com interface web completa." />
+  <meta property="og:description" content="Automatic Docker container management with a full web UI." />
   <meta property="og:image" content="https://luiscruzcwb.github.io/timoneiro/og.png" />
-  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="../icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
 
@@ -21,7 +21,7 @@
 <!-- NAV -->
 <nav class="nav" id="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-logo">
+    <a href="/en/" class="nav-logo">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="28" height="28">
         <defs>
           <linearGradient id="nm" x1="5%" y1="5%" x2="95%" y2="95%"><stop offset="0%" stop-color="#5EECFF"/><stop offset="45%" stop-color="#22D3EE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient>
@@ -52,15 +52,15 @@
     </a>
 
     <div class="nav-links">
-      <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="nav-link">Início Rápido</a>
-      <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs" class="nav-link">Documentação</a>
+      <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="nav-link">Quick Start</a>
+      <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs" class="nav-link">Docs</a>
       <a href="https://github.com/luiscruzcwb/timoneiro/releases" class="nav-link">Releases</a>
     </div>
 
     <div class="nav-actions">
       <div class="nav-lang">
-        <a href="/" class="active">PT</a>
-        <a href="/en/">EN</a>
+        <a href="/">PT</a>
+        <a href="/en/" class="active">EN</a>
       </div>
       <a href="https://github.com/luiscruzcwb/timoneiro" class="nav-github" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
@@ -74,11 +74,11 @@
   </div>
 
   <div class="nav-mobile" id="mobile-menu">
-    <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Início Rápido</a>
-    <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs">Documentação</a>
+    <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Quick Start</a>
+    <a href="https://github.com/luiscruzcwb/timoneiro/tree/main/docs">Docs</a>
     <a href="https://github.com/luiscruzcwb/timoneiro/releases">Releases</a>
     <a href="https://github.com/luiscruzcwb/timoneiro">GitHub</a>
-    <a href="/en/">English</a>
+    <a href="/">Português</a>
   </div>
 </nav>
 
@@ -93,27 +93,27 @@
           Open Source · MIT License
         </div>
         <h1 class="hero-title">
-          Gerenciamento <span class="accent">automático</span><br />
-          de containers Docker
+          <span class="accent">Automatic</span> management<br />
+          of Docker containers
         </h1>
-        <p class="hero-tagline">Mantendo seus containers no rumo certo.</p>
+        <p class="hero-tagline">Keeping your containers on course.</p>
         <p class="hero-sub">
-          Monitore, atualize e proteja containers Docker com automação completa, interface web e CVE scan integrado.
+          Monitor, update, and secure Docker containers with full automation, a web UI, and integrated CVE scanning.
         </p>
         <div class="hero-actions">
           <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="btn-primary">
-            Início Rápido
+            Quick Start
             <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
           </a>
           <a href="https://github.com/luiscruzcwb/timoneiro" class="btn-outline" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
-            Ver no GitHub
+            View on GitHub
           </a>
         </div>
         <div class="hero-install">
           <span class="install-label">docker run</span>
           <code class="install-code">-d -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/luiscruzcwb/timoneiro</code>
-          <button class="copy-btn" onclick="copyInstall(this)" title="Copiar comando">
+          <button class="copy-btn" onclick="copyInstall(this)" title="Copy command">
             <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>
           </button>
         </div>
@@ -142,15 +142,15 @@
               </div>
               <div class="mock-stat">
                 <span class="stat-num emerald">9</span>
-                <span class="stat-lbl">Atualizados</span>
+                <span class="stat-lbl">Up to date</span>
               </div>
               <div class="mock-stat">
                 <span class="stat-num amber">2</span>
-                <span class="stat-lbl">Pendentes</span>
+                <span class="stat-lbl">Pending</span>
               </div>
               <div class="mock-stat">
                 <span class="stat-num coral">0</span>
-                <span class="stat-lbl">Falhas</span>
+                <span class="stat-lbl">Failures</span>
               </div>
             </div>
             <div class="mock-list">
@@ -164,7 +164,7 @@
                 <span class="mock-status-dot" style="background:#22d3ee"></span>
                 <span class="mock-name">postgres</span>
                 <span class="mock-tag new">17.3 → 17.4</span>
-                <span class="mock-badge avail">disponível</span>
+                <span class="mock-badge avail">available</span>
               </div>
               <div class="mock-row">
                 <span class="mock-status-dot" style="background:#34d399"></span>
@@ -176,7 +176,7 @@
                 <span class="mock-status-dot" style="background:#22d3ee"></span>
                 <span class="mock-name">traefik</span>
                 <span class="mock-tag new">3.2.1 → 3.3.0</span>
-                <span class="mock-badge avail">disponível</span>
+                <span class="mock-badge avail">available</span>
               </div>
               <div class="mock-row">
                 <span class="mock-status-dot" style="background:#34d399"></span>
@@ -188,7 +188,7 @@
             <div class="mock-footer">
               <div class="mock-status-line">
                 <span class="mock-live-dot"></span>
-                Monitorando · verificado 4s atrás
+                Monitoring · checked 4s ago
               </div>
               <span class="mock-ws-badge">WS</span>
             </div>
@@ -204,8 +204,8 @@
 <section class="features" id="features">
   <div class="container">
     <div class="section-header reveal">
-      <h2 class="section-title">Tudo que você precisa</h2>
-      <p class="section-sub">Projetado para ser simples de instalar e poderoso em produção.</p>
+      <h2 class="section-title">Everything you need</h2>
+      <p class="section-sub">Designed to be simple to install and powerful in production.</p>
     </div>
 
     <div class="features-bento">
@@ -215,8 +215,8 @@
         <div class="feature-icon emerald">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
         </div>
-        <h3>Interface web completa</h3>
-        <p>Dashboard com status em tempo real via WebSocket, histórico de atualizações, aprovação manual e rollback com um clique. Sem linha de comando necessária para o dia a dia.</p>
+        <h3>Full web UI</h3>
+        <p>Dashboard with real-time status via WebSocket, update history, manual approval, and one-click rollback. No command line needed for day-to-day use.</p>
       </div>
 
       <!-- Normal: Leve -->
@@ -224,17 +224,17 @@
         <div class="feature-icon cyan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
-        <h3>Leve</h3>
-        <p>Binário único em Go, imagem Docker abaixo de 30 MB. Roda confortavelmente em um Raspberry Pi.</p>
+        <h3>Lightweight</h3>
+        <p>Single Go binary, Docker image under 30 MB. Runs comfortably on a Raspberry Pi.</p>
       </div>
 
-      <!-- Normal: Multi-Ambiente -->
+      <!-- Normal: Multi-environment -->
       <div class="feature-card reveal">
         <div class="feature-icon cyan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         </div>
-        <h3>Multi-ambiente</h3>
-        <p>Monitore hosts Docker remotos via TCP, socket Unix ou agente Timoneiro leve. Toda a infraestrutura em um painel.</p>
+        <h3>Multi-environment</h3>
+        <p>Monitor remote Docker hosts via TCP, Unix socket, or a lightweight Timoneiro agent. Your whole infrastructure in one dashboard.</p>
       </div>
 
       <!-- Normal: Registries -->
@@ -242,8 +242,8 @@
         <div class="feature-icon amber">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
-        <h3>Registries privados</h3>
-        <p>Docker Hub, GHCR e qualquer registry OCI: Harbor, Nexus, Gitea. Credenciais armazenadas localmente.</p>
+        <h3>Private registries</h3>
+        <p>Docker Hub, GHCR, and any OCI registry: Harbor, Nexus, Gitea. Credentials stored locally.</p>
       </div>
 
       <!-- Normal: Notificações -->
@@ -251,8 +251,8 @@
         <div class="feature-icon emerald">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
         </div>
-        <h3>Notificações</h3>
-        <p>Discord, Telegram, Slack, SMTP, Gotify, ntfy e qualquer serviço Shoutrrr. Múltiplos canais simultâneos.</p>
+        <h3>Notifications</h3>
+        <p>Discord, Telegram, Slack, SMTP, Gotify, ntfy, and any Shoutrrr-supported service. Multiple channels at once.</p>
       </div>
 
       <!-- Normal: Segurança -->
@@ -260,8 +260,8 @@
         <div class="feature-icon cyan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
-        <h3>CVE scan</h3>
-        <p>Integração com Trivy para detectar vulnerabilidades em novas versões antes de aplicar atualizações.</p>
+        <h3>CVE scanning</h3>
+        <p>Trivy integration to detect vulnerabilities in new versions before applying updates.</p>
       </div>
 
       <!-- Wide: Políticas -->
@@ -269,8 +269,8 @@
         <div class="feature-icon amber">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
-        <h3>Políticas de atualização</h3>
-        <p>Modos Manual, Automático e Agendado. Janelas de manutenção por dia e horário. Exceções por container ou por stack Compose. Nenhuma atualização surpresa em produção.</p>
+        <h3>Update policies</h3>
+        <p>Manual, Automatic, and Scheduled modes. Maintenance windows by day and time. Exceptions per container or per Compose stack. No surprise updates in production.</p>
       </div>
 
       <!-- Full: API REST -->
@@ -280,13 +280,13 @@
             <div class="feature-icon emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
-            <h3>API REST + WebSocket</h3>
-            <p>API completa para automação e integração com pipelines CI/CD. WebSocket para eventos em tempo real. O mesmo endpoint que a interface web usa.</p>
+            <h3>REST API + WebSocket</h3>
+            <p>A full API for automation and CI/CD pipeline integration. WebSocket for real-time events. The same endpoint the web UI uses.</p>
           </div>
-          <div class="feature-terminal" aria-label="Exemplo de uso da API">
-            <span class="t-comment"># Listar containers com atualizações disponíveis</span><br />
+          <div class="feature-terminal" aria-label="API usage example">
+            <span class="t-comment"># List containers with updates available</span><br />
             <span class="t-cyan">GET</span> <span class="t-url">/api/containers?status=update_available</span><br /><br />
-            <span class="t-comment"># Receber eventos em tempo real</span><br />
+            <span class="t-comment"># Receive real-time events</span><br />
             <span class="t-cyan">WS</span>  <span class="t-url">ws://localhost:8080/ws</span><br />
             <span class="t-key">"type"</span><span style="color:#94b4d4">: </span><span class="t-string">"update.available"</span><span style="color:#94b4d4">, </span><span class="t-key">"container"</span><span style="color:#94b4d4">: </span><span class="t-string">"postgres"</span>
           </div>
@@ -301,15 +301,15 @@
 <section class="howto" id="howto">
   <div class="container">
     <div class="section-header reveal">
-      <h2 class="section-title">Em funcionamento em minutos</h2>
-      <p class="section-sub">Sem configuração complexa. Aponte para o socket Docker e pronto.</p>
+      <h2 class="section-title">Up and running in minutes</h2>
+      <p class="section-sub">No complex configuration. Point it at the Docker socket and you're done.</p>
     </div>
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h3>Instale o Timoneiro</h3>
-          <p>Execute com Docker Run ou Compose. Monte o socket do Docker e um volume para persistência.</p>
+          <h3>Install Timoneiro</h3>
+          <p>Run it with Docker Run or Compose. Mount the Docker socket and a volume for persistence.</p>
           <div class="code-block">
             <code>docker run -d \
   --name timoneiro \
@@ -324,24 +324,24 @@
       <div class="step reveal">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h3>Acesse a interface</h3>
-          <p>Abra <strong>http://localhost:8080</strong> no navegador. O Timoneiro descobre automaticamente todos os containers em execução.</p>
+          <h3>Open the dashboard</h3>
+          <p>Open <strong>http://localhost:8080</strong> in your browser. Timoneiro automatically discovers every running container.</p>
         </div>
       </div>
 
       <div class="step reveal">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h3>Configure as políticas</h3>
-          <p>Escolha o modo de atualização (Manual, Automático ou Agendado), defina janelas de manutenção e configure os canais de notificação.</p>
+          <h3>Configure policies</h3>
+          <p>Choose the update mode (Manual, Automatic, or Scheduled), define maintenance windows, and set up notification channels.</p>
         </div>
       </div>
 
       <div class="step reveal">
         <div class="step-num">4</div>
         <div class="step-content">
-          <h3>Relaxe</h3>
-          <p>O Timoneiro monitora seus registries e mantém seus containers atualizados, ou te avisa quando há algo novo para revisar.</p>
+          <h3>Relax</h3>
+          <p>Timoneiro watches your registries and keeps your containers up to date, or lets you know when there's something new to review.</p>
         </div>
       </div>
     </div>
@@ -353,11 +353,11 @@
   <div class="cta-glow"></div>
   <div class="container">
     <div class="cta-inner reveal">
-      <h2 class="cta-title">Pronto para<br /><span class="accent">começar?</span></h2>
-      <p class="cta-sub">Open source, gratuito, sem dependências externas.</p>
+      <h2 class="cta-title">Ready to<br /><span class="accent">get started?</span></h2>
+      <p class="cta-sub">Open source, free, no external dependencies.</p>
       <div class="cta-actions">
         <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md" class="btn-primary">
-          Ver documentação
+          View documentation
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
         </a>
         <a href="https://github.com/luiscruzcwb/timoneiro" class="btn-outline" target="_blank" rel="noopener">
@@ -374,7 +374,7 @@
   <div class="container">
     <div class="footer-inner">
       <div class="footer-brand">
-        <a href="/" class="nav-logo">
+        <a href="/en/" class="nav-logo">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="22" height="22">
             <defs>
               <linearGradient id="fm" x1="5%" y1="5%" x2="95%" y2="95%"><stop offset="0%" stop-color="#5EECFF"/><stop offset="45%" stop-color="#22D3EE"/><stop offset="100%" stop-color="#0369A1"/></linearGradient>
@@ -398,22 +398,22 @@
           </svg>
           <span class="nav-name">Timoneiro</span>
         </a>
-        <p class="footer-tagline">Mantendo seus containers no rumo certo.</p>
+        <p class="footer-tagline">Keeping your containers on course.</p>
       </div>
       <div class="footer-links">
         <div class="footer-col">
-          <span class="footer-col-title">Documentação</span>
-          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Início Rápido</a>
-          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/configuration.md">Configuração</a>
-          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/environments.md">Ambientes</a>
-          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/update-policies.md">Políticas</a>
+          <span class="footer-col-title">Docs</span>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/quick-start.md">Quick Start</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/configuration.md">Configuration</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/environments.md">Environments</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/docs/update-policies.md">Policies</a>
         </div>
         <div class="footer-col">
-          <span class="footer-col-title">Projeto</span>
+          <span class="footer-col-title">Project</span>
           <a href="https://github.com/luiscruzcwb/timoneiro">GitHub</a>
           <a href="https://github.com/luiscruzcwb/timoneiro/releases">Releases</a>
-          <a href="https://github.com/luiscruzcwb/timoneiro/issues">Problemas</a>
-          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/CONTRIBUTING.md">Contribuir</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/issues">Issues</a>
+          <a href="https://github.com/luiscruzcwb/timoneiro/blob/main/CONTRIBUTING.md">Contributing</a>
         </div>
       </div>
     </div>
