@@ -19,10 +19,18 @@ import (
 
 const ContentDigestHeader = "Docker-Content-Digest"
 
+// ErrLocalImage indicates the image has no RepoDigests, meaning it was built
+// locally and never pulled from any registry — there is nothing to compare against.
+var ErrLocalImage = errors.New("image has no known registry origin (built locally)")
+
 // CompareDigest checks if local image digest matches registry digest
 func CompareDigest(container types.Container, registryAuth string) (bool, error) {
 	if !container.HasImageInfo() {
 		return false, errors.New("container image info missing")
+	}
+
+	if len(container.ImageInfo().RepoDigests) == 0 {
+		return false, ErrLocalImage
 	}
 
 	registryAuth = TransformAuth(registryAuth)

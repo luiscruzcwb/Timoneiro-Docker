@@ -10,13 +10,13 @@ import (
 	"github.com/luiscruzcwb/timoneiro/internal/util"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/docker/api/types"
 	dockercontainer "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/go-connections/nat"
 )
 
 // NewContainer returns a new Container instance instantiated with the specified info structs.
-func NewContainer(containerInfo *types.ContainerJSON, imageInfo *types.ImageInspect) *Container {
+func NewContainer(containerInfo *dockercontainer.InspectResponse, imageInfo *image.InspectResponse) *Container {
 	return &Container{
 		containerInfo: containerInfo,
 		imageInfo:     imageInfo,
@@ -28,8 +28,8 @@ type Container struct {
 	LinkedToRestarting bool
 	Stale              bool
 
-	containerInfo *types.ContainerJSON
-	imageInfo     *types.ImageInspect
+	containerInfo *dockercontainer.InspectResponse
+	imageInfo     *image.InspectResponse
 }
 
 func (c *Container) IsLinkedToRestarting() bool { return c.LinkedToRestarting }
@@ -37,7 +37,7 @@ func (c *Container) IsStale() bool              { return c.Stale }
 func (c *Container) SetLinkedToRestarting(value bool) { c.LinkedToRestarting = value }
 func (c *Container) SetStale(value bool)              { c.Stale = value }
 
-func (c Container) ContainerInfo() *types.ContainerJSON { return c.containerInfo }
+func (c Container) ContainerInfo() *dockercontainer.InspectResponse { return c.containerInfo }
 
 func (c Container) ID() wt.ContainerID {
 	return wt.ContainerID(c.containerInfo.ID)
@@ -208,7 +208,7 @@ func (c Container) GetCreateConfig() *dockercontainer.Config {
 	config.Volumes = util.StructMapSubtract(config.Volumes, imageConfig.Volumes)
 
 	for k := range config.ExposedPorts {
-		if _, ok := imageConfig.ExposedPorts[k]; ok {
+		if _, ok := imageConfig.ExposedPorts[string(k)]; ok {
 			delete(config.ExposedPorts, k)
 		}
 	}
@@ -231,7 +231,7 @@ func (c Container) GetCreateHostConfig() *dockercontainer.HostConfig {
 }
 
 func (c Container) HasImageInfo() bool { return c.imageInfo != nil }
-func (c Container) ImageInfo() *types.ImageInspect { return c.imageInfo }
+func (c Container) ImageInfo() *image.InspectResponse { return c.imageInfo }
 
 func (c Container) VerifyConfiguration() error {
 	if c.imageInfo == nil {

@@ -12,6 +12,7 @@ import {
 import PageHeader from '../components/PageHeader'
 import { Card, Button, Input, Label } from '../components/ui'
 import { useAuth } from '../hooks/useAuth'
+import { copyToClipboard } from '../lib/clipboard'
 
 // Kept for composed variants (http:// prefix inputs, pre block, token display)
 const inputStyle = {
@@ -42,12 +43,15 @@ function genToken() {
 function CopyButton({ text }: { text: string }) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
-  const copy = useCallback(() => {
-    navigator.clipboard.writeText(text).then(() => {
+  const copy = useCallback(async () => {
+    const ok = await copyToClipboard(text)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
-  }, [text])
+    } else {
+      toast.error(t('common.copyFailed', 'Não foi possível copiar'))
+    }
+  }, [text, t])
   return (
     <button onClick={copy} title={t('common.copy', 'Copiar')}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#34d399' : '#7aa3c0', display: 'flex', alignItems: 'center' }}>

@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	dockerclient "github.com/docker/docker/client"
 	"github.com/go-chi/chi/v5"
@@ -53,7 +53,7 @@ func main() {
 	})
 
 	r.Get("/containers", func(w http.ResponseWriter, r *http.Request) {
-		list, err := cli.ContainerList(r.Context(), types.ContainerListOptions{
+		list, err := cli.ContainerList(r.Context(), container.ListOptions{
 			Filters: filters.NewArgs(filters.Arg("status", "running")),
 		})
 		if err != nil {

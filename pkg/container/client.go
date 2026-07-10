@@ -2,14 +2,15 @@ package container
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	sdkClient "github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
@@ -101,7 +102,7 @@ func (client dockerClient) ListContainers(fn t.Filter) ([]t.Container, error) {
 	bg := context.Background()
 
 	filter := client.createListFilter()
-	containers, err := client.api.ContainerList(bg, types.ContainerListOptions{Filters: filter})
+	containers, err := client.api.ContainerList(bg, container.ListOptions{Filters: filter})
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +182,7 @@ func (client dockerClient) StopContainer(c t.Container, timeout time.Duration) e
 		log.Debugf("AutoRemove container %s, skipping ContainerRemove call.", shortID)
 	} else {
 		log.Debugf("Removing container %s", shortID)
-		if err := client.api.ContainerRemove(bg, idStr, types.ContainerRemoveOptions{Force: true, RemoveVolumes: client.RemoveVolumes}); err != nil {
+		if err := client.api.ContainerRemove(bg, idStr, container.RemoveOptions{Force: true, RemoveVolumes: client.RemoveVolumes}); err != nil {
 			if sdkClient.IsErrNotFound(err) {
 				return nil
 			}
@@ -258,7 +259,7 @@ func (client dockerClient) StartContainer(c t.Container) (t.ContainerID, error) 
 
 func (client dockerClient) doStartContainer(bg context.Context, c t.Container, creation container.CreateResponse) error {
 	log.Debugf("Starting container %s (%s)", c.Name(), t.ContainerID(creation.ID).ShortID())
-	return client.api.ContainerStart(bg, creation.ID, types.ContainerStartOptions{})
+	return client.api.ContainerStart(bg, creation.ID, container.StartOptions{})
 }
 
 func (client dockerClient) RenameContainer(c t.Container, newName string) error {
@@ -308,7 +309,10 @@ func (client dockerClient) PullImage(ctx context.Context, container t.Container)
 		return err
 	}
 
-	if match, err := digest.CompareDigest(container, opts.RegistryAuth); err != nil {
+	if match, err := digest.CompareDigest(container, opts.RegistryAuth); errors.Is(err, digest.ErrLocalImage) {
+		log.WithField("image", imageName).Debug("Image has no RepoDigests — treating as a local build, skipping registry check")
+		return err
+	} else if err != nil {
 		headLevel := log.DebugLevel
 		if client.WarnOnHeadPullFailed(container) {
 			headLevel = log.WarnLevel
@@ -347,14 +351,14 @@ func (client dockerClient) PullImageByName(ctx context.Context, imageName string
 
 func (client dockerClient) RemoveImageByID(id t.ImageID) error {
 	log.Infof("Removing image %s", id.ShortID())
-	_, err := client.api.ImageRemove(context.Background(), string(id), types.ImageRemoveOptions{Force: true})
+	_, err := client.api.ImageRemove(context.Background(), string(id), image.RemoveOptions{Force: true})
 	return err
 }
 
 func (client dockerClient) ExecuteCommand(containerID t.ContainerID, command string, timeout int) (SkipUpdate bool, err error) {
 	bg := context.Background()
 
-	execConfig := types.ExecConfig{
+	execConfig := container.ExecOptions{
 		Tty:    true,
 		Detach: false,
 		Cmd:    []string{"sh", "-c", command},
@@ -364,12 +368,12 @@ func (client dockerClient) ExecuteCommand(containerID t.ContainerID, command str
 		return false, err
 	}
 
-	response, attachErr := client.api.ContainerExecAttach(bg, exec.ID, types.ExecStartCheck{Tty: true, Detach: false})
+	response, attachErr := client.api.ContainerExecAttach(bg, exec.ID, container.ExecAttachOptions{Tty: true, Detach: false})
 	if attachErr != nil {
 		log.Errorf("Failed to extract command exec logs: %v", attachErr)
 	}
 
-	if err = client.api.ContainerExecStart(bg, exec.ID, types.ExecStartCheck{Detach: false, Tty: true}); err != nil {
+	if err = client.api.ContainerExecStart(bg, exec.ID, container.ExecStartOptions{Detach: false, Tty: true}); err != nil {
 		return false, err
 	}
 

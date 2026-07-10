@@ -15,6 +15,7 @@
     "type": "Type",
     "confirm": "Confirm",
     "copy": "Copy",
+    "copyFailed": "Couldn't copy to clipboard",
     "failed": "failed",
     "statusBadge": {
       "up_to_date": "Up to date",

@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/luiscruzcwb/timoneiro/pkg/container"
 	"github.com/luiscruzcwb/timoneiro/pkg/filters"
 	"github.com/luiscruzcwb/timoneiro/pkg/registry"
+	"github.com/luiscruzcwb/timoneiro/pkg/registry/digest"
 	t "github.com/luiscruzcwb/timoneiro/pkg/types"
 	log "github.com/sirupsen/logrus"
 )
@@ -650,6 +652,9 @@ func (e *Engine) RollbackContainer(containerID string) error {
 // no remote counterpart (locally built, never pushed), as opposed to a real
 // infrastructure failure (network timeout, bad credentials, etc.).
 func isLocalImageError(err error) bool {
+	if errors.Is(err, digest.ErrLocalImage) {
+		return true
+	}
 	msg := strings.ToLower(err.Error())
 	return strings.Contains(msg, "repository does not exist") ||
 		strings.Contains(msg, "manifest unknown") ||
