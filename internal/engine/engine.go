@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -159,6 +160,29 @@ func (e *Engine) autoApprove(u *db.PendingUpdate) {
 		return
 	}
 	_ = e.DB.UpdatePendingUpdateStatus(u.ID, "deployed")
+}
+
+// isSelfContainer reports whether id refers to the container Timoneiro itself is
+// running in. Docker sets a container's hostname to its own short ID unless a
+// custom hostname is configured, so this works without any extra plumbing.
+//
+// This exists as a safety net independent of the "dev.timoneiro.enable=false"
+// label: performUpdate() stops the target container in-process, and Timoneiro
+// has no signal handler to survive being stopped. If Timoneiro is ever asked to
+// update itself (label missing, exception misconfigured, manual click in the
+// UI), StopContainer's SIGTERM kills the running process before StartContainer
+// can recreate it, and "unless-stopped" won't revive a container that was
+// deliberately stopped — Timoneiro stays down until someone notices and runs
+// `docker start` by hand, which just repeats the loop. This is what happened on
+// CT100: the deployed compose file omitted the label, the update policy was
+// "automatic", and Timoneiro auto-approved an update against itself every
+// cycle, self-terminating in a tight restart loop.
+func isSelfContainer(id t.ContainerID) bool {
+	hostname, err := os.Hostname()
+	if err != nil || hostname == "" {
+		return false
+	}
+	return id.ShortID() == hostname || string(id) == hostname
 }
 
 // effectiveModeFromPolicy returns the update mode for a container, checking exceptions first
@@ -375,6 +399,16 @@ func (e *Engine) checkEnvironment(env db.Environment) notifications.CheckSummary
 			}
 			policy, _ := e.DB.GetPolicySettings()
 			mode := e.effectiveModeFromPolicy(policy, string(c.ID()), labels)
+			self := isSelfContainer(c.ID())
+			if self && mode == "automatic" {
+				// Never auto-apply an update to the container we're running in — see
+				// isSelfContainer for why that self-terminates without recovering.
+				// Still record it as a pending update below so it's visible in the
+				// dashboard; the operator must apply it from outside (redeploy via
+				// compose) or via an explicit manual approval.
+				log.Warnf("Engine[%s]: %s is Timoneiro's own container — skipping automatic self-update", env.Name, c.Name())
+				mode = "manual"
+			}
 
 			if mode == "skip" {
 				continue
