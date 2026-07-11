@@ -117,6 +117,14 @@ func (e *Engine) runScheduledUpdates() {
 	log.Infof("Scheduler: applying %d pending updates within maintenance window", len(pending))
 	for i := range pending {
 		u := pending[i]
+		if isSelfContainer(t.ContainerID(u.ContainerID)) {
+			// Same self-update hazard as checkEnvironment (see isSelfContainer):
+			// the "scheduled" mode bypasses that guard entirely because it never
+			// goes through checkEnvironment's mode downgrade, so it needs its own
+			// check here before handing the pending update to autoApprove.
+			log.Warnf("Scheduler: skipping self-update for %s — apply manually if needed", u.ContainerName)
+			continue
+		}
 		mode := e.effectiveModeFromPolicy(policy, u.ContainerID, nil)
 		if mode == "scheduled" || mode == "automatic" {
 			go e.autoApprove(&u)
