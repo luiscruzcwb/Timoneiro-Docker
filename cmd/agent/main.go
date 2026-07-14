@@ -89,6 +89,16 @@ func main() {
 		writeJSON(w, dist)
 	})
 
+	r.Get("/images/{id}/inspect", func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		info, _, err := cli.ImageInspectWithRaw(r.Context(), id)
+		if err != nil {
+			writeError(w, http.StatusNotFound, "image not found")
+			return
+		}
+		writeJSON(w, info)
+	})
+
 	log.Infof("Agent listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)

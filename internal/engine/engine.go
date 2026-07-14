@@ -6,11 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	dockercontainer "github.com/docker/docker/api/types/container"
+	dockerimage "github.com/docker/docker/api/types/image"
 	"github.com/luiscruzcwb/timoneiro/internal/api/ws"
 	"github.com/luiscruzcwb/timoneiro/internal/db"
 	"github.com/luiscruzcwb/timoneiro/internal/notifications"
@@ -260,7 +263,8 @@ type agentContainer struct {
 	Labels  map[string]string `json:"Labels"`
 }
 
-func (e *Engine) checkAgentEnvironment(env db.Environment) {
+func (e *Engine) checkAgentEnvironment(env db.Environment) notifications.CheckSummary {
+	summary := notifications.CheckSummary{EnvironmentName: env.Name}
 	base := strings.TrimRight(env.Host, "/")
 
 	doGet := func(path string, v interface{}) error {
@@ -287,7 +291,7 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) {
 	var list []agentContainer
 	if err := doGet("/containers", &list); err != nil {
 		log.Errorf("Engine[%s]: agent list failed: %v", env.Name, err)
-		return
+		return summary
 	}
 
 	activeIDs := make([]string, 0, len(list))
@@ -298,6 +302,8 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) {
 		}
 		activeIDs = append(activeIDs, c.ID)
 
+		// Register first so the container shows up on the dashboard even if
+		// the digest check below fails (e.g. agent unreachable mid-cycle).
 		record := &db.ContainerRecord{
 			ID:            c.ID,
 			EnvironmentID: env.ID,
@@ -311,6 +317,14 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) {
 			log.Errorf("Engine[%s]: upsert %s failed: %v", env.Name, name, err)
 		}
 
+		record.Status = e.checkAgentContainerStatus(doGet, env, c.ID)
+		if err := e.DB.UpsertContainer(record); err != nil {
+			log.Errorf("Engine[%s]: failed to update container status %s: %v", env.Name, name, err)
+		}
+		summary.Containers = append(summary.Containers, notifications.ContainerResult{
+			Name: name, Image: c.Image, Status: record.Status,
+		})
+
 		e.Hub.Publish(ws.EventContainerStatusChanged, map[string]interface{}{
 			"containerId":   c.ID,
 			"containerName": name,
@@ -322,14 +336,55 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) {
 	if err := e.DB.DeleteStaleContainers(env.ID, activeIDs); err != nil {
 		log.Errorf("Engine[%s]: failed to clean stale containers: %v", env.Name, err)
 	}
+	return summary
+}
+
+// checkAgentContainerStatus determines whether an agent-managed container is
+// up to date by fetching its container/image inspect data through the agent's
+// read-only HTTP API and comparing the current image's RepoDigests against the
+// registry's manifest digest — the same HEAD-based comparison used for local
+// containers, but sourced remotely since Timoneiro has no direct Docker access
+// to agent-managed hosts.
+func (e *Engine) checkAgentContainerStatus(doGet func(string, interface{}) error, env db.Environment, containerID string) string {
+	var containerInfo dockercontainer.InspectResponse
+	if err := doGet("/containers/"+url.PathEscape(containerID)+"/inspect", &containerInfo); err != nil {
+		log.Debugf("Engine[%s]: agent container inspect failed for %s: %v", env.Name, containerID, err)
+		return "unknown"
+	}
+
+	var imageInfo dockerimage.InspectResponse
+	if err := doGet("/images/"+url.PathEscape(containerInfo.Image)+"/inspect", &imageInfo); err != nil {
+		log.Debugf("Engine[%s]: agent image inspect failed for %s: %v", env.Name, containerID, err)
+		return "unknown"
+	}
+
+	c := container.NewContainer(&containerInfo, &imageInfo)
+
+	opts, err := registry.GetPullOptions(c.ImageName())
+	if err != nil {
+		log.Debugf("Engine[%s]: failed to resolve pull options for %s: %v", env.Name, c.ImageName(), err)
+		return "unknown"
+	}
+
+	match, err := digest.CompareDigest(c, opts.RegistryAuth)
+	if err != nil {
+		if isLocalImageError(err) {
+			return "local"
+		}
+		log.Debugf("Engine[%s]: digest compare failed for %s: %v", env.Name, c.ImageName(), err)
+		return "unknown"
+	}
+	if match {
+		return "up_to_date"
+	}
+	return "update_available"
 }
 
 func (e *Engine) checkEnvironment(env db.Environment) notifications.CheckSummary {
-	summary := notifications.CheckSummary{EnvironmentName: env.Name}
 	if env.Type == "agent" {
-		e.checkAgentEnvironment(env)
-		return summary
+		return e.checkAgentEnvironment(env)
 	}
+	summary := notifications.CheckSummary{EnvironmentName: env.Name}
 
 	cli, err := e.getClient(env)
 	if err != nil {
