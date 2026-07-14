@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/containrrr/shoutrrr"
+	"github.com/containrrr/shoutrrr/pkg/types"
 	"github.com/luiscruzcwb/timoneiro/internal/db"
 	log "github.com/sirupsen/logrus"
 )
@@ -47,6 +48,7 @@ func (m *Manager) NotifyUpdate(history *db.UpdateHistory) {
 		status = "falhou"
 	}
 
+	subject := fmt.Sprintf("Timoneiro — %s %s", history.ContainerName, status)
 	msg := fmt.Sprintf("Timoneiro — %s: %s → %s (%s)",
 		history.ContainerName, history.OldImage, history.NewImage, status)
 
@@ -55,7 +57,7 @@ func (m *Manager) NotifyUpdate(history *db.UpdateHistory) {
 			continue
 		}
 		go func(channel db.NotificationChannel) {
-			if err := m.send(&channel, msg); err != nil {
+			if err := m.send(&channel, subject, msg); err != nil {
 				log.Errorf("Notification failed [%s]: %v", channel.Name, err)
 			}
 		}(ch)
@@ -64,7 +66,8 @@ func (m *Manager) NotifyUpdate(history *db.UpdateHistory) {
 
 // Test sends a test message through a specific channel
 func (m *Manager) Test(nc *db.NotificationChannel) error {
-	return m.send(nc, fmt.Sprintf("Timoneiro — canal \"%s\" configurado com sucesso!", nc.Name))
+	subject := fmt.Sprintf("Timoneiro — teste do canal \"%s\"", nc.Name)
+	return m.send(nc, subject, fmt.Sprintf("Timoneiro — canal \"%s\" configurado com sucesso!", nc.Name))
 }
 
 // NotifyCheckSummary sends a consolidated batch email at the end of a check cycle.
@@ -97,15 +100,25 @@ func (m *Manager) NotifyCheckSummary(summaries []CheckSummary) {
 		return
 	}
 
+	var subject string
+	switch {
+	case len(available) > 0 && len(failed) > 0:
+		subject = fmt.Sprintf("Timoneiro — %d atualização(ões) disponível(is), %d erro(s)", len(available), len(failed))
+	case len(failed) > 0:
+		subject = fmt.Sprintf("Timoneiro — %d erro(s) de atualização", len(failed))
+	default:
+		subject = fmt.Sprintf("Timoneiro — %d atualização(ões) disponível(is)", len(available))
+	}
+
 	var lines []string
-	lines = append(lines, fmt.Sprintf("Timoneiro — ciclo de verificacao · %d containers", len(allContainers)))
+	lines = append(lines, fmt.Sprintf("Timoneiro — ciclo de verificação · %d containers", len(allContainers)))
 	lines = append(lines, strings.Repeat("-", 52))
 	lines = append(lines, "")
 
 	if len(available) > 0 {
-		lines = append(lines, fmt.Sprintf("Atualizacoes disponiveis (%d):", len(available)))
+		lines = append(lines, fmt.Sprintf("Atualizações disponíveis (%d):", len(available)))
 		for _, c := range available {
-			lines = append(lines, fmt.Sprintf("  %s   %s", strings.TrimPrefix(c.Name, "/"), c.Image))
+			lines = append(lines, fmt.Sprintf("  %s → %s", strings.TrimPrefix(c.Name, "/"), c.Image))
 		}
 		lines = append(lines, "")
 	}
@@ -113,7 +126,7 @@ func (m *Manager) NotifyCheckSummary(summaries []CheckSummary) {
 	if len(failed) > 0 {
 		lines = append(lines, fmt.Sprintf("Erros (%d):", len(failed)))
 		for _, c := range failed {
-			lines = append(lines, fmt.Sprintf("  %s   %s", strings.TrimPrefix(c.Name, "/"), c.Image))
+			lines = append(lines, fmt.Sprintf("  %s → %s", strings.TrimPrefix(c.Name, "/"), c.Image))
 		}
 		lines = append(lines, "")
 	}
@@ -143,17 +156,35 @@ func (m *Manager) NotifyCheckSummary(summaries []CheckSummary) {
 		}
 		ch := ch
 		go func() {
-			if err := m.send(&ch, message); err != nil {
+			if err := m.send(&ch, subject, message); err != nil {
 				log.Errorf("NotifyCheckSummary failed [%s]: %v", ch.Name, err)
 			}
 		}()
 	}
 }
 
-func (m *Manager) send(nc *db.NotificationChannel, message string) error {
+// send dispatches a message through the channel's shoutrrr URL. subject is only
+// applied to SMTP channels (shoutrrr ignores/rejects the "subject" param on
+// services that don't support it), overriding the URL's default per-message.
+func (m *Manager) send(nc *db.NotificationChannel, subject, message string) error {
 	url := strings.TrimSpace(nc.Config)
 	if url == "" {
 		return fmt.Errorf("shoutrrr URL não configurada para o canal %q", nc.Name)
 	}
-	return shoutrrr.Send(url, message)
+
+	if nc.Type != "smtp" || subject == "" {
+		return shoutrrr.Send(url, message)
+	}
+
+	sender, err := shoutrrr.CreateSender(url)
+	if err != nil {
+		return err
+	}
+	params := &types.Params{"subject": subject}
+	for _, sendErr := range sender.Send(message, params) {
+		if sendErr != nil {
+			return sendErr
+		}
+	}
+	return nil
 }
