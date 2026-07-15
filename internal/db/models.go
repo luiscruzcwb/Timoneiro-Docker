@@ -106,6 +106,15 @@ type Registry struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+// NotifyState tracks the last check-summary email sent, so the engine can
+// avoid re-sending an identical batch every check cycle when a container
+// stays stuck in update_available/failed (e.g. an update awaiting manual
+// approval, or a persistent digest-check error).
+type NotifyState struct {
+	Hash       string    `json:"hash"`
+	LastSentAt time.Time `json:"lastSentAt"`
+}
+
 func DefaultPolicySettings() PolicySettings {
 	return PolicySettings{
 		UpdateMode:          "manual",

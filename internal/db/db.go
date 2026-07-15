@@ -575,6 +575,34 @@ func (d *DB) SavePolicySettings(p PolicySettings) error {
 	return err
 }
 
+func (d *DB) GetNotifyState() (NotifyState, error) {
+	var raw string
+	err := d.conn.QueryRow(`SELECT value FROM settings WHERE key = 'notify_state'`).Scan(&raw)
+	if err == sql.ErrNoRows {
+		return NotifyState{}, nil
+	}
+	if err != nil {
+		return NotifyState{}, err
+	}
+	var s NotifyState
+	if err := json.Unmarshal([]byte(raw), &s); err != nil {
+		return NotifyState{}, err
+	}
+	return s, nil
+}
+
+func (d *DB) SaveNotifyState(s NotifyState) error {
+	data, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	_, err = d.conn.Exec(
+		`INSERT INTO settings (key, value) VALUES ('notify_state', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+		string(data),
+	)
+	return err
+}
+
 // --- Registries ---
 
 func (d *DB) ListRegistries() ([]Registry, error) {

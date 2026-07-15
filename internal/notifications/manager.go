@@ -1,14 +1,22 @@
 package notifications
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/containrrr/shoutrrr/pkg/types"
 	"github.com/luiscruzcwb/timoneiro/internal/db"
 	log "github.com/sirupsen/logrus"
 )
+
+// checkSummaryReminderInterval bounds how often an unchanged actionable batch
+// (same containers still update_available/failed) gets re-sent as a reminder.
+const checkSummaryReminderInterval = 6 * time.Hour
 
 // ContainerResult holds one container's check result for the batch summary
 type ContainerResult struct {
@@ -97,6 +105,24 @@ func (m *Manager) NotifyCheckSummary(summaries []CheckSummary) {
 
 	// Only notify when there's something actionable
 	if len(available) == 0 && len(failed) == 0 {
+		// Reset dedup state so the next actionable batch is treated as fresh
+		// rather than compared against a stale hash from a previous incident.
+		_ = m.DB.SaveNotifyState(db.NotifyState{})
+		return
+	}
+
+	// Don't re-send an identical batch every check cycle — a container stuck
+	// in update_available (e.g. awaiting manual approval) or failed (e.g. a
+	// persistent digest-check error) would otherwise trigger an email every
+	// single check interval, forever. Only send when the actionable set
+	// changed, or after checkSummaryReminderInterval has passed since the
+	// last send.
+	hash := fingerprintActionable(available, failed)
+	state, err := m.DB.GetNotifyState()
+	if err != nil {
+		log.Errorf("NotifyCheckSummary: failed to load notify state: %v", err)
+	}
+	if state.Hash == hash && time.Since(state.LastSentAt) < checkSummaryReminderInterval {
 		return
 	}
 
@@ -161,6 +187,26 @@ func (m *Manager) NotifyCheckSummary(summaries []CheckSummary) {
 			}
 		}()
 	}
+
+	if err := m.DB.SaveNotifyState(db.NotifyState{Hash: hash, LastSentAt: time.Now()}); err != nil {
+		log.Errorf("NotifyCheckSummary: failed to save notify state: %v", err)
+	}
+}
+
+// fingerprintActionable returns a stable hash of the actionable containers
+// (update_available + failed), so callers can detect whether a batch is
+// identical to the last one sent and skip re-notifying about it.
+func fingerprintActionable(available, failed []ContainerResult) string {
+	items := make([]string, 0, len(available)+len(failed))
+	for _, c := range available {
+		items = append(items, "A:"+c.Name+"|"+c.Image)
+	}
+	for _, c := range failed {
+		items = append(items, "F:"+c.Name+"|"+c.Image)
+	}
+	sort.Strings(items)
+	sum := sha256.Sum256([]byte(strings.Join(items, ",")))
+	return hex.EncodeToString(sum[:])
 }
 
 // send dispatches a message through the channel's shoutrrr URL. subject is only
