@@ -39,7 +39,7 @@ type Client interface {
 
 // NewClient returns a new Client instance which can be used to interact with the Docker API.
 func NewClient(opts ClientOptions) Client {
-	cli, err := sdkClient.NewClientWithOpts(sdkClient.FromEnv)
+	cli, err := sdkClient.NewClientWithOpts(sdkClient.FromEnv, sdkClient.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("Error instantiating Docker client: %s", err)
 	}

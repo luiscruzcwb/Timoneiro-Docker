@@ -247,6 +247,18 @@ func (d *DB) ListContainers(environmentID int64) ([]ContainerRecord, error) {
 	return containers, nil
 }
 
+func (d *DB) GetContainerByID(id string) (*ContainerRecord, error) {
+	var c ContainerRecord
+	err := d.conn.QueryRow(
+		`SELECT id, environment_id, name, image, status, current_digest, latest_digest, COALESCE(tags,'[]'), last_checked, last_updated FROM containers WHERE id = ?`, id,
+	).Scan(&c.ID, &c.EnvironmentID, &c.Name, &c.Image, &c.Status,
+		&c.CurrentDigest, &c.LatestDigest, &c.Tags, &c.LastChecked, &c.LastUpdated)
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
 func (d *DB) UpdateContainerTags(id string, tags string) error {
 	_, err := d.conn.Exec(`UPDATE containers SET tags = ? WHERE id = ?`, tags, id)
 	return err

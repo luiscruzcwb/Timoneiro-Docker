@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -317,18 +318,48 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) notifications.CheckSu
 			log.Errorf("Engine[%s]: upsert %s failed: %v", env.Name, name, err)
 		}
 
-		record.Status = e.checkAgentContainerStatus(doGet, env, c.ID)
+		status, labels := e.checkAgentContainerStatus(doGet, env, c.ID)
+		record.Status = status
 		if err := e.DB.UpsertContainer(record); err != nil {
 			log.Errorf("Engine[%s]: failed to update container status %s: %v", env.Name, name, err)
 		}
 		summary.Containers = append(summary.Containers, notifications.ContainerResult{
-			Name: name, Image: c.Image, Status: record.Status,
+			Name: name, Image: c.Image, Status: status,
 		})
+
+		if status == "update_available" {
+			policy, _ := e.DB.GetPolicySettings()
+			mode := e.effectiveModeFromPolicy(policy, c.ID, labels)
+			if isSelfContainer(t.ContainerID(c.ID)) && mode == "automatic" {
+				mode = "manual"
+			}
+			if mode != "skip" {
+				// LatestDigest is left blank: unlike the local flow, this check only
+				// does a registry HEAD comparison (no pull), so we know the current
+				// digest is stale but not the new one.
+				pending := &db.PendingUpdate{
+					ContainerID:   c.ID,
+					ContainerName: name,
+					EnvironmentID: env.ID,
+					CurrentImage:  c.Image,
+					LatestImage:   c.Image,
+					CurrentDigest: c.ImageID,
+				}
+				if err := e.DB.UpsertPendingUpdate(pending); err != nil {
+					log.Errorf("Engine[%s]: failed to create pending update for %s: %v", env.Name, name, err)
+				} else {
+					go e.scanCVE(pending.ID, c.Image)
+					if mode == "automatic" {
+						go e.autoApprove(pending)
+					}
+				}
+			}
+		}
 
 		e.Hub.Publish(ws.EventContainerStatusChanged, map[string]interface{}{
 			"containerId":   c.ID,
 			"containerName": name,
-			"status":        record.Status,
+			"status":        status,
 			"environmentId": env.ID,
 		})
 	}
@@ -345,17 +376,20 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) notifications.CheckSu
 // registry's manifest digest — the same HEAD-based comparison used for local
 // containers, but sourced remotely since Timoneiro has no direct Docker access
 // to agent-managed hosts.
-func (e *Engine) checkAgentContainerStatus(doGet func(string, interface{}) error, env db.Environment, containerID string) string {
+func (e *Engine) checkAgentContainerStatus(doGet func(string, interface{}) error, env db.Environment, containerID string) (status string, labels map[string]string) {
 	var containerInfo dockercontainer.InspectResponse
 	if err := doGet("/containers/"+url.PathEscape(containerID)+"/inspect", &containerInfo); err != nil {
 		log.Debugf("Engine[%s]: agent container inspect failed for %s: %v", env.Name, containerID, err)
-		return "unknown"
+		return "unknown", nil
+	}
+	if containerInfo.Config != nil {
+		labels = containerInfo.Config.Labels
 	}
 
 	var imageInfo dockerimage.InspectResponse
 	if err := doGet("/images/"+url.PathEscape(containerInfo.Image)+"/inspect", &imageInfo); err != nil {
 		log.Debugf("Engine[%s]: agent image inspect failed for %s: %v", env.Name, containerID, err)
-		return "unknown"
+		return "unknown", labels
 	}
 
 	c := container.NewContainer(&containerInfo, &imageInfo)
@@ -363,21 +397,21 @@ func (e *Engine) checkAgentContainerStatus(doGet func(string, interface{}) error
 	opts, err := registry.GetPullOptions(c.ImageName())
 	if err != nil {
 		log.Debugf("Engine[%s]: failed to resolve pull options for %s: %v", env.Name, c.ImageName(), err)
-		return "unknown"
+		return "unknown", labels
 	}
 
 	match, err := digest.CompareDigest(c, opts.RegistryAuth)
 	if err != nil {
 		if isLocalImageError(err) {
-			return "local"
+			return "local", labels
 		}
 		log.Debugf("Engine[%s]: digest compare failed for %s: %v", env.Name, c.ImageName(), err)
-		return "unknown"
+		return "unknown", labels
 	}
 	if match {
-		return "up_to_date"
+		return "up_to_date", labels
 	}
-	return "update_available"
+	return "update_available", labels
 }
 
 func (e *Engine) checkEnvironment(env db.Environment) notifications.CheckSummary {
@@ -541,16 +575,22 @@ func (e *Engine) scanCVE(updateID int64, imageName string) {
 // notify=true sends an immediate per-event notification (manual triggers from UI).
 // notify=false suppresses it — used for automatic updates covered by the batch summary.
 func (e *Engine) UpdateContainer(containerID string, notify bool) error {
+	// Fetch pending update now so we have metadata regardless of what happens below
+	pendingUpdate, _ := e.DB.GetPendingUpdateByContainerID(containerID)
+
+	if record, err := e.DB.GetContainerByID(containerID); err == nil {
+		if env, envErr := e.DB.GetEnvironment(record.EnvironmentID); envErr == nil && env.Type == "agent" {
+			return e.updateAgentContainer(*env, record, pendingUpdate, notify)
+		}
+	}
+
 	envs, err := e.DB.ListEnvironments()
 	if err != nil {
 		return err
 	}
 
-	// Fetch pending update now so we have metadata regardless of what happens below
-	pendingUpdate, _ := e.DB.GetPendingUpdateByContainerID(containerID)
-
 	for _, env := range envs {
-		// Agent environments don't expose a Docker API; skip them here
+		// Agent environments are handled above via updateAgentContainer
 		if env.Type == "agent" {
 			continue
 		}
@@ -584,7 +624,7 @@ func (e *Engine) UpdateContainer(containerID string, notify bool) error {
 		}
 
 		oldImage := c.ImageName()
-		newContainerID, err := performUpdate(cli, c, params)
+		newContainerID, err := container.PerformUpdate(cli, c, params)
 		duration := time.Since(start).Milliseconds()
 
 		newImage := oldImage
@@ -664,6 +704,134 @@ func (e *Engine) UpdateContainer(containerID string, notify bool) error {
 	return notFoundErr
 }
 
+// callAgent issues an authenticated HTTP request to an agent-managed environment.
+// If v is non-nil, a successful JSON response is decoded into it.
+func callAgent(env db.Environment, method, path string, timeout time.Duration, v interface{}) error {
+	base := strings.TrimRight(env.Host, "/")
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, method, base+path, nil)
+	if err != nil {
+		return err
+	}
+	if env.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+env.Token)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("agent returned %s: %s", resp.Status, strings.TrimSpace(string(body)))
+	}
+	if v == nil {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(v)
+}
+
+// updateAgentContainer applies an update to a container running on an agent-managed
+// host. Timoneiro has no direct Docker connection to these hosts, so the actual
+// pull+recreate is delegated to the agent's own local Docker access via its
+// POST /containers/{id}/update endpoint.
+func (e *Engine) updateAgentContainer(env db.Environment, record *db.ContainerRecord, pendingUpdate *db.PendingUpdate, notify bool) error {
+	e.Hub.Publish(ws.EventUpdateStarted, map[string]string{
+		"containerId":   record.ID,
+		"containerName": record.Name,
+	})
+	_ = e.DB.UpdateContainerStatus(record.ID, "updating")
+
+	start := time.Now()
+	path := "/containers/" + url.PathEscape(record.ID) + "/update"
+	updateErr := callAgent(env, http.MethodPost, path, 180*time.Second, nil)
+	duration := time.Since(start).Milliseconds()
+
+	newImage := record.Image
+	if pendingUpdate != nil && pendingUpdate.LatestImage != "" {
+		newImage = pendingUpdate.LatestImage
+	}
+
+	history := &db.UpdateHistory{
+		ContainerID:   record.ID,
+		ContainerName: record.Name,
+		EnvironmentID: env.ID,
+		OldImage:      record.Image,
+		NewImage:      newImage,
+		Duration:      duration,
+	}
+
+	if updateErr != nil {
+		history.Status = "failed"
+		history.Error = updateErr.Error()
+		_ = e.DB.UpdateContainerStatus(record.ID, "failed")
+		e.Hub.Publish(ws.EventUpdateFailed, map[string]string{
+			"containerId": record.ID,
+			"error":       updateErr.Error(),
+		})
+	} else {
+		history.Status = "success"
+		_ = e.DB.UpdateContainerStatus(record.ID, "up_to_date")
+		e.Hub.Publish(ws.EventUpdateCompleted, map[string]string{
+			"containerId": record.ID,
+		})
+	}
+
+	if err := e.DB.AddHistory(history); err != nil {
+		log.Errorf("updateAgentContainer: failed to record history for %s: %v", record.ID, err)
+	}
+	if notify {
+		e.Notifications.NotifyUpdate(history)
+	}
+	return updateErr
+}
+
+// rollbackAgentContainer reverts a container on an agent-managed host to prevImage,
+// delegating the pull+recreate to the agent the same way updateAgentContainer does.
+func (e *Engine) rollbackAgentContainer(env db.Environment, record *db.ContainerRecord, prevImage string) error {
+	e.Hub.Publish(ws.EventUpdateStarted, map[string]string{
+		"containerId":   record.ID,
+		"containerName": record.Name,
+		"type":          "rollback",
+	})
+
+	start := time.Now()
+	path := "/containers/" + url.PathEscape(record.ID) + "/rollback?image=" + url.QueryEscape(prevImage)
+	rollbackErr := callAgent(env, http.MethodPost, path, 120*time.Second, nil)
+	duration := time.Since(start).Milliseconds()
+
+	history := &db.UpdateHistory{
+		ContainerID:   record.ID,
+		ContainerName: record.Name,
+		EnvironmentID: env.ID,
+		OldImage:      record.Image,
+		NewImage:      prevImage,
+		Duration:      duration,
+	}
+
+	if rollbackErr != nil {
+		history.Status = "failed"
+		history.Error = rollbackErr.Error()
+		_ = e.DB.UpdateContainerStatus(record.ID, "failed")
+		e.Hub.Publish(ws.EventUpdateFailed, map[string]string{
+			"containerId": record.ID,
+			"error":       rollbackErr.Error(),
+		})
+	} else {
+		history.Status = "rolled_back"
+		_ = e.DB.UpdateContainerStatus(record.ID, "up_to_date")
+		e.Hub.Publish(ws.EventUpdateCompleted, map[string]string{
+			"containerId": record.ID,
+			"type":        "rollback",
+		})
+	}
+
+	_ = e.DB.AddHistory(history)
+	e.Notifications.NotifyUpdate(history)
+	return rollbackErr
+}
+
 // RollbackContainer reverts a container to its previous image
 func (e *Engine) RollbackContainer(containerID string) error {
 	e.mu.RLock()
@@ -680,12 +848,21 @@ func (e *Engine) RollbackContainer(containerID string) error {
 
 	log.Infof("Rolling back container %s to image %s", containerID, prevImage)
 
+	if record, err := e.DB.GetContainerByID(containerID); err == nil {
+		if env, envErr := e.DB.GetEnvironment(record.EnvironmentID); envErr == nil && env.Type == "agent" {
+			return e.rollbackAgentContainer(*env, record, prevImage)
+		}
+	}
+
 	envs, err := e.DB.ListEnvironments()
 	if err != nil {
 		return err
 	}
 
 	for _, env := range envs {
+		if env.Type == "agent" {
+			continue
+		}
 		cli, err := e.getClient(env)
 		if err != nil {
 			continue
@@ -708,7 +885,7 @@ func (e *Engine) RollbackContainer(containerID string) error {
 		}
 
 		currentImage := c.ImageName()
-		rollbackErr := performRollback(cli, c, prevImage, params)
+		rollbackErr := container.PerformRollback(cli, c, prevImage, params)
 		duration := time.Since(start).Milliseconds()
 
 		history := &db.UpdateHistory{

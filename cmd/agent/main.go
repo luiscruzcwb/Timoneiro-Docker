@@ -15,6 +15,8 @@ import (
 	dockerclient "github.com/docker/docker/client"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	tcontainer "github.com/luiscruzcwb/timoneiro/pkg/container"
+	t "github.com/luiscruzcwb/timoneiro/pkg/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -42,61 +44,118 @@ func main() {
 	}
 	log.Infof("Timoneiro Agent starting | Docker %s | port :%s", ping.APIVersion, port)
 
+	// Higher-level client used only by the update/rollback endpoints below —
+	// mirrors the wrapper the main Timoneiro engine uses against local hosts,
+	// so pull+recreate behaves identically whether the container is local or
+	// reached through this agent.
+	updateCli := tcontainer.NewClient(tcontainer.ClientOptions{WarnOnHeadFailed: tcontainer.WarnNever})
+
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
 	r.Use(rateLimiter(60, time.Minute)) // 60 req/min por IP
 	r.Use(authMiddleware(token))
 
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, map[string]string{"status": "ok", "docker": ping.APIVersion})
-	})
+	// Read-only endpoints: fast, bounded by a short timeout.
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Timeout(30 * time.Second))
 
-	r.Get("/containers", func(w http.ResponseWriter, r *http.Request) {
-		list, err := cli.ContainerList(r.Context(), container.ListOptions{
-			Filters: filters.NewArgs(filters.Arg("status", "running")),
+		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+			writeJSON(w, map[string]string{"status": "ok", "docker": ping.APIVersion})
 		})
-		if err != nil {
-			log.Errorf("ContainerList failed: %v", err)
-			writeError(w, http.StatusInternalServerError, "failed to list containers")
-			return
-		}
-		writeJSON(w, list)
+
+		r.Get("/containers", func(w http.ResponseWriter, r *http.Request) {
+			list, err := cli.ContainerList(r.Context(), container.ListOptions{
+				Filters: filters.NewArgs(filters.Arg("status", "running")),
+			})
+			if err != nil {
+				log.Errorf("ContainerList failed: %v", err)
+				writeError(w, http.StatusInternalServerError, "failed to list containers")
+				return
+			}
+			writeJSON(w, list)
+		})
+
+		r.Get("/containers/{id}/inspect", func(w http.ResponseWriter, r *http.Request) {
+			id := chi.URLParam(r, "id")
+			info, _, err := cli.ContainerInspectWithRaw(r.Context(), id, false)
+			if err != nil {
+				writeError(w, http.StatusNotFound, "container not found")
+				return
+			}
+			// Strip env vars to prevent leaking secrets from other containers
+			if info.Config != nil {
+				info.Config.Env = nil
+			}
+			writeJSON(w, info)
+		})
+
+		r.Get("/images/{name}/manifest", func(w http.ResponseWriter, r *http.Request) {
+			name := chi.URLParam(r, "name")
+			dist, err := cli.DistributionInspect(r.Context(), name, "")
+			if err != nil {
+				log.Errorf("DistributionInspect(%s) failed: %v", name, err)
+				writeError(w, http.StatusInternalServerError, "failed to inspect image")
+				return
+			}
+			writeJSON(w, dist)
+		})
+
+		r.Get("/images/{id}/inspect", func(w http.ResponseWriter, r *http.Request) {
+			id := chi.URLParam(r, "id")
+			info, _, err := cli.ImageInspectWithRaw(r.Context(), id)
+			if err != nil {
+				writeError(w, http.StatusNotFound, "image not found")
+				return
+			}
+			writeJSON(w, info)
+		})
 	})
 
-	r.Get("/containers/{id}/inspect", func(w http.ResponseWriter, r *http.Request) {
-		id := chi.URLParam(r, "id")
-		info, _, err := cli.ContainerInspectWithRaw(r.Context(), id, false)
-		if err != nil {
-			writeError(w, http.StatusNotFound, "container not found")
-			return
-		}
-		// Strip env vars to prevent leaking secrets from other containers
-		if info.Config != nil {
-			info.Config.Env = nil
-		}
-		writeJSON(w, info)
-	})
+	// Mutating endpoints: pull + stop + recreate a container. Slower and given
+	// a much longer budget than the read-only group above.
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Timeout(5 * time.Minute))
 
-	r.Get("/images/{name}/manifest", func(w http.ResponseWriter, r *http.Request) {
-		name := chi.URLParam(r, "name")
-		dist, err := cli.DistributionInspect(r.Context(), name, "")
-		if err != nil {
-			log.Errorf("DistributionInspect(%s) failed: %v", name, err)
-			writeError(w, http.StatusInternalServerError, "failed to inspect image")
-			return
-		}
-		writeJSON(w, dist)
-	})
+		r.Post("/containers/{id}/update", func(w http.ResponseWriter, r *http.Request) {
+			id := chi.URLParam(r, "id")
+			c, err := updateCli.GetContainer(t.ContainerID(id))
+			if err != nil {
+				writeError(w, http.StatusNotFound, "container not found")
+				return
+			}
+			if err := updateCli.PullImageByName(r.Context(), c.ImageName()); err != nil {
+				log.Warnf("Pull failed for %s (%s): %v — attempting update with cached image", c.Name(), c.ImageName(), err)
+			}
+			params := t.UpdateParams{Cleanup: true, Timeout: 60 * time.Second}
+			newID, err := tcontainer.PerformUpdate(updateCli, c, params)
+			if err != nil {
+				log.Errorf("Update failed for %s: %v", c.Name(), err)
+				writeError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			writeJSON(w, map[string]string{"status": "updated", "newContainerId": string(newID)})
+		})
 
-	r.Get("/images/{id}/inspect", func(w http.ResponseWriter, r *http.Request) {
-		id := chi.URLParam(r, "id")
-		info, _, err := cli.ImageInspectWithRaw(r.Context(), id)
-		if err != nil {
-			writeError(w, http.StatusNotFound, "image not found")
-			return
-		}
-		writeJSON(w, info)
+		r.Post("/containers/{id}/rollback", func(w http.ResponseWriter, r *http.Request) {
+			id := chi.URLParam(r, "id")
+			previousImage := r.URL.Query().Get("image")
+			if previousImage == "" {
+				writeError(w, http.StatusBadRequest, "image query param is required")
+				return
+			}
+			c, err := updateCli.GetContainer(t.ContainerID(id))
+			if err != nil {
+				writeError(w, http.StatusNotFound, "container not found")
+				return
+			}
+			params := t.UpdateParams{Timeout: 60 * time.Second}
+			if err := tcontainer.PerformRollback(updateCli, c, previousImage, params); err != nil {
+				log.Errorf("Rollback failed for %s: %v", c.Name(), err)
+				writeError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			writeJSON(w, map[string]string{"status": "rolled_back"})
+		})
 	})
 
 	log.Infof("Agent listening on :%s", port)
