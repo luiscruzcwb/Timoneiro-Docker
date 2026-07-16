@@ -7,7 +7,7 @@ O Agente Timoneiro é um binário leve que roda em um host Docker remoto e expõ
 Expor o socket Docker via TCP (porta 2375) sem TLS é um sério risco de segurança: concede acesso root completo ao host. O Agente resolve isso ao:
 
 - Rodar localmente no host remoto com acesso ao socket Docker via socket Unix
-- Expor apenas uma API mínima e orientada a leitura (listar containers, inspecionar, verificar manifests)
+- Expor apenas uma API mínima (listar containers, inspecionar, verificar manifests, atualizar/reverter um container específico) — não é um proxy da API completa do Docker
 - Exigir um Bearer token em cada requisição
 - Limitar as requisições (60/minuto por IP) para prevenir abusos
 
@@ -22,7 +22,7 @@ docker run -d \
   --name timoneiro-agent \
   --restart unless-stopped \
   -p 1895:1895 \
-  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -e TIMONEIRO_AGENT_TOKEN=seu-token-secreto \
   ghcr.io/luiscruzcwb/timoneiro-agent
 ```
@@ -38,7 +38,7 @@ services:
     ports:
       - "1895:1895"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TIMONEIRO_AGENT_TOKEN=seu-token-secreto
 ```
@@ -74,3 +74,8 @@ O agente expõe os seguintes endpoints (todos requerem `Authorization: Bearer <t
 | `GET` | `/containers` | Listar containers em execução |
 | `GET` | `/containers/{id}/inspect` | Inspecionar um container (variáveis de ambiente removidas) |
 | `GET` | `/images/{name}/manifest` | Verificar manifest/digest de imagem |
+| `GET` | `/images/{id}/inspect` | Inspecionar uma imagem local |
+| `POST` | `/containers/{id}/update` | Fazer pull da imagem atual e recriar o container (pull + stop + recreate) |
+| `POST` | `/containers/{id}/rollback?image=<imagem-anterior>` | Reverter o container para uma imagem anterior |
+
+Os dois endpoints `POST` executam a atualização de verdade no host remoto — por isso o mount do socket Docker precisa ser leitura-e-escrita (sem `:ro`). Eles não expõem a API do Docker de forma genérica: só operam sobre o container indicado pelo `{id}`, com timeout de 5 minutos.

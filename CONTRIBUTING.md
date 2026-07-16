@@ -4,7 +4,7 @@ Obrigado pelo interesse em contribuir! Este documento cobre o processo para repo
 
 ## Reportando Problemas
 
-Antes de abrir uma issue, verifique as [issues existentes](https://github.com/luiscruzcwb/timoneiro/issues) para evitar duplicatas.
+Antes de abrir uma issue, verifique as [issues existentes](https://github.com/luiscruzcwb/Timoneiro-Docker/issues) para evitar duplicatas.
 
 Ao reportar um bug, inclua:
 
@@ -17,7 +17,7 @@ Ao reportar um bug, inclua:
 
 ## Propondo Funcionalidades
 
-Abra uma [discussão no GitHub](https://github.com/luiscruzcwb/timoneiro/discussions) ou uma issue com a tag `enhancement` informando:
+Abra uma [discussão no GitHub](https://github.com/luiscruzcwb/Timoneiro-Docker/discussions) ou uma issue com a tag `enhancement` informando:
 
 - O problema que você quer resolver
 - Sua solução proposta
@@ -28,8 +28,8 @@ Abra uma [discussão no GitHub](https://github.com/luiscruzcwb/timoneiro/discuss
 **Requisitos:** Go 1.22+, Node.js 18+, Docker
 
 ```bash
-git clone https://github.com/luiscruzcwb/timoneiro.git
-cd Timoneiro
+git clone https://github.com/luiscruzcwb/Timoneiro-Docker.git
+cd Timoneiro-Docker
 
 # Backend
 go build ./...

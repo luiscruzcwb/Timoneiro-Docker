@@ -9,7 +9,7 @@ services:
     ports:
       - "1895:1895"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TIMONEIRO_AGENT_TOKEN=${TIMONEIRO_AGENT_TOKEN}
       - TIMONEIRO_AGENT_PORT=1895
