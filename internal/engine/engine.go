@@ -347,7 +347,10 @@ func (e *Engine) checkAgentEnvironment(env db.Environment) notifications.CheckSu
 				}
 				if err := e.DB.UpsertPendingUpdate(pending); err != nil {
 					log.Errorf("Engine[%s]: failed to create pending update for %s: %v", env.Name, name, err)
-				} else {
+				} else if pending.Status != "deploying" {
+					// Skip if an attempt for this container is already in flight — the
+					// next check cycle can land before a slow pull+recreate finishes,
+					// and re-approving would fire a second, concurrent update.
 					go e.scanCVE(pending.ID, c.Image)
 					if mode == "automatic" {
 						go e.autoApprove(pending)
@@ -522,7 +525,10 @@ func (e *Engine) checkEnvironment(env db.Environment) notifications.CheckSummary
 			}
 			if err := e.DB.UpsertPendingUpdate(pending); err != nil {
 				log.Errorf("Engine[%s]: failed to create pending update: %v", env.Name, err)
-			} else {
+			} else if pending.Status != "deploying" {
+				// Skip if an attempt for this container is already in flight — the
+				// next check cycle can land before a slow pull+recreate finishes,
+				// and re-approving would fire a second, concurrent update.
 				go e.scanCVE(pending.ID, c.ImageName())
 				if mode == "automatic" {
 					go e.autoApprove(pending)
@@ -745,7 +751,11 @@ func (e *Engine) updateAgentContainer(env db.Environment, record *db.ContainerRe
 
 	start := time.Now()
 	path := "/containers/" + url.PathEscape(record.ID) + "/update"
-	updateErr := callAgent(env, http.MethodPost, path, 180*time.Second, nil)
+	// Must exceed the agent's own mutating-endpoint timeout (5min, see
+	// cmd/agent/main.go) — otherwise the client gives up with "context deadline
+	// exceeded" while the agent is still pulling/recreating, logging a false
+	// failure for an update that actually goes on to succeed.
+	updateErr := callAgent(env, http.MethodPost, path, 6*time.Minute, nil)
 	duration := time.Since(start).Milliseconds()
 
 	newImage := record.Image
@@ -798,7 +808,9 @@ func (e *Engine) rollbackAgentContainer(env db.Environment, record *db.Container
 
 	start := time.Now()
 	path := "/containers/" + url.PathEscape(record.ID) + "/rollback?image=" + url.QueryEscape(prevImage)
-	rollbackErr := callAgent(env, http.MethodPost, path, 120*time.Second, nil)
+	// Same margin as updateAgentContainer — must exceed the agent's 5min
+	// mutating-endpoint timeout.
+	rollbackErr := callAgent(env, http.MethodPost, path, 6*time.Minute, nil)
 	duration := time.Since(start).Milliseconds()
 
 	history := &db.UpdateHistory{

@@ -433,10 +433,15 @@ func (d *DB) GetNotificationChannel(id int64) (*NotificationChannel, error) {
 func (d *DB) UpsertPendingUpdate(u *PendingUpdate) error {
 	u.UpdatedAt = time.Now()
 	var existingID int64
+	var existingStatus string
+	// 'deploying' is included so an update already in flight isn't missed here and
+	// re-created as a second, independent row — which would let the next check
+	// cycle fire a concurrent auto-approve against the same container before the
+	// first attempt even finishes.
 	err := d.conn.QueryRow(
-		`SELECT id FROM pending_updates WHERE container_id = ? AND status = 'pending'`,
+		`SELECT id, status FROM pending_updates WHERE container_id = ? AND status IN ('pending', 'deploying')`,
 		u.ContainerID,
-	).Scan(&existingID)
+	).Scan(&existingID, &existingStatus)
 
 	if err == nil {
 		_, err = d.conn.Exec(
@@ -444,6 +449,7 @@ func (d *DB) UpsertPendingUpdate(u *PendingUpdate) error {
 			u.LatestImage, u.LatestDigest, u.CVECritical, u.CVEHigh, u.CVEMedium, u.CVELow, u.CVEData, u.UpdatedAt, existingID,
 		)
 		u.ID = existingID
+		u.Status = existingStatus
 		return err
 	}
 
