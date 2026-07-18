@@ -106,12 +106,10 @@ type Registry struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-// NotifyState tracks the last check-summary email sent, so the engine can
-// avoid re-sending an identical batch every check cycle when a container
-// stays stuck in update_available/failed (e.g. an update awaiting manual
-// approval, or a persistent digest-check error).
+// NotifyState tracks the last check-summary email sent, capping it to at
+// most one per checkSummaryInterval regardless of how often the actionable
+// set changes in between.
 type NotifyState struct {
-	Hash       string    `json:"hash"`
 	LastSentAt time.Time `json:"lastSentAt"`
 }
 
