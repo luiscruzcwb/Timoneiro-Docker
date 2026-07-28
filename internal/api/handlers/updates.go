@@ -63,6 +63,14 @@ func (h *UpdateHandler) Approve(w http.ResponseWriter, r *http.Request) {
 		if err := h.DB.UpdatePendingUpdateStatus(id, "deploying"); err != nil {
 			return
 		}
+		// Same reasoning as engine.autoApprove: without this, a panic mid-update
+		// leaves the row in "deploying" forever, permanently blocking retries.
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("Deployment panicked for update %d: %v", id, r)
+				_ = h.DB.UpdatePendingUpdateStatus(id, "failed")
+			}
+		}()
 		if err := h.Engine.UpdateContainer(update.ContainerID, true); err != nil {
 			log.Errorf("Deployment failed for update %d: %v", id, err)
 			_ = h.DB.UpdatePendingUpdateStatus(id, "failed")

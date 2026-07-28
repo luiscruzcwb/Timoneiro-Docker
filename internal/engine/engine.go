@@ -57,6 +57,11 @@ func New(database *db.DB, hub *ws.Hub, nm *notifications.Manager, interval time.
 // Start begins the monitoring loop
 func (e *Engine) Start() {
 	log.Infof("Engine starting, check interval: %s", e.Interval)
+	if n, err := e.DB.FailOrphanedDeploys(); err != nil {
+		log.Errorf("Engine: failed to reconcile orphaned deploys: %v", err)
+	} else if n > 0 {
+		log.Warnf("Engine: found %d pending update(s) stuck in 'deploying' from a previous run, marked as 'failed'", n)
+	}
 	registry.DBCredentialsLookup = func(host string) (string, string, bool) {
 		reg, err := e.DB.GetRegistryByHost(host)
 		if err != nil || reg == nil {
@@ -166,6 +171,15 @@ func (e *Engine) autoApprove(u *db.PendingUpdate) {
 	if err := e.DB.UpdatePendingUpdateStatus(u.ID, "deploying"); err != nil {
 		return
 	}
+	// A panic here must still resolve the row out of "deploying" — otherwise
+	// checkEnvironment's re-entrancy guard blocks this container forever, with
+	// no automatic recovery until the next process restart's reconciliation.
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Auto-update panicked for %s: %v", u.ContainerName, r)
+			_ = e.DB.UpdatePendingUpdateStatus(u.ID, "failed")
+		}
+	}()
 	if err := e.UpdateContainer(u.ContainerID, false); err != nil {
 		log.Errorf("Auto-update failed for %s: %v", u.ContainerName, err)
 		_ = e.DB.UpdatePendingUpdateStatus(u.ID, "failed")
@@ -646,6 +660,13 @@ func (e *Engine) UpdateContainer(containerID string, notify bool) error {
 			NewImage:      newImage,
 			Duration:      duration,
 		}
+		if pendingUpdate != nil {
+			history.CVECritical = pendingUpdate.CVECritical
+			history.CVEHigh = pendingUpdate.CVEHigh
+			history.CVEMedium = pendingUpdate.CVEMedium
+			history.CVELow = pendingUpdate.CVELow
+			history.CVEData = pendingUpdate.CVEData
+		}
 
 		if err != nil {
 			history.Status = "failed"
@@ -770,6 +791,13 @@ func (e *Engine) updateAgentContainer(env db.Environment, record *db.ContainerRe
 		OldImage:      record.Image,
 		NewImage:      newImage,
 		Duration:      duration,
+	}
+	if pendingUpdate != nil {
+		history.CVECritical = pendingUpdate.CVECritical
+		history.CVEHigh = pendingUpdate.CVEHigh
+		history.CVEMedium = pendingUpdate.CVEMedium
+		history.CVELow = pendingUpdate.CVELow
+		history.CVEData = pendingUpdate.CVEData
 	}
 
 	if updateErr != nil {

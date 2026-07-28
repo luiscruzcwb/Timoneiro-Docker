@@ -249,6 +249,7 @@
     },
     "imageAge": "image: {{age}}",
     "detected": "detected {{age}}",
+    "applied": "applied {{age}}",
     "total": "{{count}} total",
     "noCveData": "// CVE data not available yet — waiting for next Trivy scan",
     "cveTableHeader": "CVE · PACKAGE · DESCRIPTION",
@@ -257,7 +258,9 @@
       "subtitle": "All monitored containers are clean."
     },
     "hint_one": "// {{count}} container with vulnerabilities — click to expand",
-    "hint_other": "// {{count}} containers with vulnerabilities — click to expand"
+    "hint_other": "// {{count}} containers with vulnerabilities — click to expand",
+    "historyHint_one": "// {{count}} applied update had CVEs at scan time",
+    "historyHint_other": "// {{count}} applied updates had CVEs at scan time"
   },
   "registries": {
     "slug": "registries",

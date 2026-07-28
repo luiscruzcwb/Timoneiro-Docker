@@ -249,6 +249,7 @@
     },
     "imageAge": "imagem: {{age}}",
     "detected": "detectado {{age}}",
+    "applied": "aplicado {{age}}",
     "total": "{{count}} total",
     "noCveData": "// dados de CVE não disponíveis — aguarde próximo scan do Trivy",
     "cveTableHeader": "CVE · PACOTE · DESCRIÇÃO",
@@ -257,7 +258,9 @@
       "subtitle": "Todos os containers monitorados estão limpos."
     },
     "hint_one": "// {{count}} container com vulnerabilidades — clique para expandir",
-    "hint_other": "// {{count}} containers com vulnerabilidades — clique para expandir"
+    "hint_other": "// {{count}} containers com vulnerabilidades — clique para expandir",
+    "historyHint_one": "// {{count}} update aplicado tinha CVEs no momento do scan",
+    "historyHint_other": "// {{count}} updates aplicados tinham CVEs no momento do scan"
   },
   "registries": {
     "slug": "registries",

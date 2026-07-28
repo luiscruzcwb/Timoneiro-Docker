@@ -52,6 +52,11 @@ export interface UpdateHistory {
   status: 'success' | 'failed' | 'rolled_back'
   error?: string
   duration: number
+  cveCritical: number
+  cveHigh: number
+  cveMedium: number
+  cveLow: number
+  cveData: string
   createdAt: string
 }
 

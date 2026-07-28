@@ -128,6 +128,11 @@ func (d *DB) migrate() error {
 		`ALTER TABLE environments ADD COLUMN token TEXT DEFAULT ''`,
 		`ALTER TABLE containers ADD COLUMN tags TEXT DEFAULT '[]'`,
 		`ALTER TABLE pending_updates ADD COLUMN notes TEXT DEFAULT ''`,
+		`ALTER TABLE update_history ADD COLUMN cve_critical INTEGER DEFAULT 0`,
+		`ALTER TABLE update_history ADD COLUMN cve_high INTEGER DEFAULT 0`,
+		`ALTER TABLE update_history ADD COLUMN cve_medium INTEGER DEFAULT 0`,
+		`ALTER TABLE update_history ADD COLUMN cve_low INTEGER DEFAULT 0`,
+		`ALTER TABLE update_history ADD COLUMN cve_data TEXT DEFAULT '[]'`,
 	}
 	for _, stmt := range alterations {
 		d.conn.Exec(stmt) // nolint: ignore "duplicate column name" on re-run
@@ -300,10 +305,14 @@ func (d *DB) DeleteStaleContainers(environmentID int64, activeIDs []string) erro
 
 func (d *DB) AddHistory(h *UpdateHistory) error {
 	h.CreatedAt = time.Now()
+	if h.CVEData == "" {
+		h.CVEData = "[]"
+	}
 	res, err := d.conn.Exec(
-		`INSERT INTO update_history (container_id, container_name, environment_id, old_image, new_image, status, error, duration, created_at)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		h.ContainerID, h.ContainerName, h.EnvironmentID, h.OldImage, h.NewImage, h.Status, h.Error, h.Duration, h.CreatedAt,
+		`INSERT INTO update_history (container_id, container_name, environment_id, old_image, new_image, status, error, duration, cve_critical, cve_high, cve_medium, cve_low, cve_data, created_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		h.ContainerID, h.ContainerName, h.EnvironmentID, h.OldImage, h.NewImage, h.Status, h.Error, h.Duration,
+		h.CVECritical, h.CVEHigh, h.CVEMedium, h.CVELow, h.CVEData, h.CreatedAt,
 	)
 	if err != nil {
 		return err
@@ -313,7 +322,7 @@ func (d *DB) AddHistory(h *UpdateHistory) error {
 }
 
 func (d *DB) ListHistory(limit, offset int, environmentID int64, containerID string) ([]UpdateHistory, error) {
-	query := `SELECT id, container_id, container_name, environment_id, old_image, new_image, status, error, duration, created_at FROM update_history WHERE 1=1`
+	query := `SELECT id, container_id, container_name, environment_id, old_image, new_image, status, error, duration, cve_critical, cve_high, cve_medium, cve_low, cve_data, created_at FROM update_history WHERE 1=1`
 	args := []interface{}{}
 
 	if environmentID > 0 {
@@ -337,7 +346,8 @@ func (d *DB) ListHistory(limit, offset int, environmentID int64, containerID str
 	for rows.Next() {
 		var h UpdateHistory
 		if err := rows.Scan(&h.ID, &h.ContainerID, &h.ContainerName, &h.EnvironmentID,
-			&h.OldImage, &h.NewImage, &h.Status, &h.Error, &h.Duration, &h.CreatedAt); err != nil {
+			&h.OldImage, &h.NewImage, &h.Status, &h.Error, &h.Duration,
+			&h.CVECritical, &h.CVEHigh, &h.CVEMedium, &h.CVELow, &h.CVEData, &h.CreatedAt); err != nil {
 			return nil, err
 		}
 		history = append(history, h)
@@ -519,6 +529,24 @@ func (d *DB) UpdatePendingUpdateStatus(id int64, status string) error {
 		status, time.Now(), id,
 	)
 	return err
+}
+
+// FailOrphanedDeploys marks any pending_updates left in "deploying" as "failed".
+// That status only exists while an update goroutine is in flight; since goroutines
+// don't survive a process restart, any row still in "deploying" when the engine
+// starts belongs to a run that was killed mid-update (crash, redeploy, host
+// reboot) and will never transition itself. Left alone, checkEnvironment's
+// re-entrancy guard (pending.Status != "deploying") would skip that container
+// forever, so this must run before the engine's first check cycle.
+func (d *DB) FailOrphanedDeploys() (int64, error) {
+	res, err := d.conn.Exec(
+		`UPDATE pending_updates SET status='failed', updated_at=? WHERE status='deploying'`,
+		time.Now(),
+	)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
 }
 
 func (d *DB) GetPendingUpdate(id int64) (*PendingUpdate, error) {

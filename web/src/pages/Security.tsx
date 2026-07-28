@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Clock } from 'lucide-react'
-import { getUpdates, getContainers, type PendingUpdate, type Container } from '../api/client'
+import { getUpdates, getContainers, getHistory, type PendingUpdate, type Container, type UpdateHistory } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import { Skeleton } from '../components/Skeleton'
 import { Card, EmptyState, TONE, Tone } from '../components/ui'
@@ -157,6 +157,93 @@ function CVECard({ update, container }: { update: PendingUpdate; container?: Con
   )
 }
 
+// ─── History CVE Card ──────────────────────────────────────────────────────
+function HistoryCVECard({ entry }: { entry: UpdateHistory }) {
+  const { t, i18n } = useTranslation()
+  const SEV = useSeverities()
+  const [expanded, setExpanded] = useState(false)
+  const cves = parseCVEs(entry.cveData)
+  const total = entry.cveCritical + entry.cveHigh + entry.cveMedium + entry.cveLow
+  const name = entry.containerName.startsWith('/') ? entry.containerName.slice(1) : entry.containerName
+
+  const maxSev = entry.cveCritical > 0 ? SEV[0]
+    : entry.cveHigh > 0 ? SEV[1]
+    : entry.cveMedium > 0 ? SEV[2]
+    : SEV[3]
+  const maxColor = TONE[maxSev.tone]
+
+  const sevOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
+  const sortedCVEs = [...cves].sort((a, b) => (sevOrder[a.Severity] ?? 9) - (sevOrder[b.Severity] ?? 9))
+  const appliedAge = relTime(entry.createdAt, i18n.language)
+
+  return (
+    <Card>
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+        style={{ borderLeft: `3px solid ${maxColor}` }}
+        onClick={() => setExpanded(v => !v)}
+      >
+        <div className="text-text-muted shrink-0 flex">
+          {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        </div>
+        <div
+          className="w-7 h-7 rounded flex items-center justify-center shrink-0 border"
+          style={{ background: `${maxColor}12`, borderColor: `${maxColor}30` }}
+        >
+          <AlertTriangle size={12} style={{ color: maxColor }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-display font-semibold text-text-bright" style={{ fontSize: '0.85rem' }}>
+            {name}
+          </div>
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            <span className="font-mono text-2xs text-text-soft truncate">{entry.newImage}</span>
+            <span className="flex items-center gap-1 font-mono text-label text-text-muted shrink-0">
+              <Clock size={9} />{t('security.applied', { age: appliedAge })}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          {SEV.map(s => {
+            const count = entry[s.key]
+            if (count === 0) return null
+            const color = TONE[s.tone]
+            return (
+              <span
+                key={s.key}
+                className="font-mono rounded-sm border px-1.5 py-0.5"
+                style={{ color, background: `${color}12`, borderColor: `${color}30`, fontSize: '0.58rem', letterSpacing: '0.04em' }}
+              >
+                {count} {s.label}
+              </span>
+            )
+          })}
+          <span className="font-mono text-2xs text-text-soft ml-1">{t('security.total', { count: total })}</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-border-subtle">
+          <div className="py-1" style={{ background: '#040810' }}>
+            {sortedCVEs.length === 0 ? (
+              <div className="font-mono text-text-muted px-4 py-3" style={{ fontSize: '0.65rem' }}>
+                {t('security.noCveData')}
+              </div>
+            ) : (
+              <>
+                <div className="font-mono text-3xs tracking-widest text-text-muted px-3 pt-2 pb-1 grid gap-3" style={{ gridTemplateColumns: '50px 1fr' }}>
+                  <span>SEV</span><span>{t('security.cveTableHeader')}</span>
+                </div>
+                {sortedCVEs.map((cve, i) => <CVEDetail key={`${cve.VulnerabilityID}-${i}`} cve={cve} />)}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
 // ─── Skeleton ──────────────────────────────────────────────────────────────
 function SecuritySkeleton() {
   return (
@@ -203,11 +290,20 @@ export default function Security() {
     refetchInterval: 30_000,
   })
 
+  const { data: history = [] } = useQuery({
+    queryKey: ['history', 'security'],
+    queryFn: () => getHistory({ limit: 200 }),
+  })
+
   const containerMap = Object.fromEntries(containers.map((c: Container) => [c.id, c]))
 
   const withCVE = [...updates]
     .filter((u: PendingUpdate) => u.status === 'pending' && (u.cveCritical > 0 || u.cveHigh > 0 || u.cveMedium > 0 || u.cveLow > 0))
     .sort((a: PendingUpdate, b: PendingUpdate) => b.cveCritical - a.cveCritical || b.cveHigh - a.cveHigh)
+
+  const historyWithCVE = [...history]
+    .filter((h: UpdateHistory) => h.status !== 'failed' && (h.cveCritical > 0 || h.cveHigh > 0 || h.cveMedium > 0 || h.cveLow > 0))
+    .sort((a: UpdateHistory, b: UpdateHistory) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   const totals = withCVE.reduce(
     (acc, u: PendingUpdate) => ({
@@ -268,6 +364,20 @@ export default function Security() {
               <div className="space-y-2">
                 {withCVE.map((u: PendingUpdate) => (
                   <CVECard key={u.id} update={u} container={containerMap[u.containerId]} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* History — CVEs that shipped with an already-applied update */}
+          {historyWithCVE.length > 0 && (
+            <div>
+              <div className="font-mono text-2xs tracking-wider text-text-soft mb-3">
+                {t('security.historyHint', { count: historyWithCVE.length })}
+              </div>
+              <div className="space-y-2">
+                {historyWithCVE.map((h: UpdateHistory) => (
+                  <HistoryCVECard key={h.id} entry={h} />
                 ))}
               </div>
             </div>

@@ -40,6 +40,11 @@ type UpdateHistory struct {
 	Status        string    `json:"status"` // success, failed, rolled_back
 	Error         string    `json:"error,omitempty"`
 	Duration      int64     `json:"duration"` // milliseconds
+	CVECritical   int       `json:"cveCritical"`
+	CVEHigh       int       `json:"cveHigh"`
+	CVEMedium     int       `json:"cveMedium"`
+	CVELow        int       `json:"cveLow"`
+	CVEData       string    `json:"cveData"` // JSON array, copied from the pending update's scan at apply time
 	CreatedAt     time.Time `json:"createdAt"`
 }
 
