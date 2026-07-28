@@ -3,7 +3,6 @@ import { Loader2 } from 'lucide-react'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Containers from './pages/Containers'
-import Updates from './pages/Updates'
 import Security from './pages/Security'
 import Registries from './pages/Registries'
 import Audit from './pages/Audit'
@@ -32,9 +31,9 @@ export default function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/containers" element={<Containers />} />
-        <Route path="/updates" element={<Updates />} />
+        <Route path="/updates" element={<Navigate to="/containers" replace />} />
         <Route path="/security" element={<Security />} />
-        <Route path="/approvals" element={<Navigate to="/updates" replace />} />
+        <Route path="/approvals" element={<Navigate to="/containers" replace />} />
         <Route path="/registries" element={<Registries />} />
         <Route path="/images" element={<Navigate to="/registries" replace />} />
         <Route path="/audit" element={<Audit />} />

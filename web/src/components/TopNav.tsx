@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  LayoutDashboard, Container, RefreshCw, Shield,
+  LayoutDashboard, Container, Shield,
   Database, History, Settings, Lock, User, Menu, X, LogOut, ChevronDown,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
@@ -17,7 +17,6 @@ function useNavItems() {
   const main = [
     { to: '/dashboard',  icon: LayoutDashboard, label: t('nav.dashboard')  },
     { to: '/containers', icon: Container,        label: t('nav.containers') },
-    { to: '/updates',    icon: RefreshCw,        label: t('nav.updates')   },
     { to: '/security',   icon: Shield,           label: t('nav.security')  },
   ]
   const system = [
@@ -153,8 +152,8 @@ export default function TopNav() {
   const cveCount     = allUpdates.filter(u => u.status === 'pending' && (u.cveCritical > 0 || u.cveHigh > 0)).length
 
   const badges: Record<string, number> = {
-    '/updates':  pendingCount,
-    '/security': cveCount,
+    '/containers': pendingCount,
+    '/security':   cveCount,
   }
 
   return (

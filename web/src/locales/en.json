@@ -29,7 +29,6 @@
   "nav": {
     "dashboard": "Overview",
     "containers": "Containers",
-    "updates": "Updates",
     "security": "Security",
     "registries": "Registries",
     "audit": "Audit Log",
@@ -139,6 +138,8 @@
     "title": "Containers",
     "subtitle_one": "{{filtered}} of {{count}} container",
     "subtitle_other": "{{filtered}} of {{count}} containers",
+    "pendingApprovals": "· {{count}} awaiting approval",
+    "criticalCves": "· {{count}} with critical CVEs",
     "refreshing": "refreshing…",
     "checkNow": "Check now",
     "checking": "Checking…",
@@ -155,43 +156,19 @@
       "environment": "Environment",
       "checked": "Checked",
       "updated": "Updated",
-      "cve": "CVE"
+      "update": "Update"
     },
     "empty": {
       "noResults": "No results for \"{{query}}\"",
       "none": "No containers found"
     },
-    "actions": {
-      "update": "Update",
-      "updating": "Updating…",
-      "rollback": "Rollback",
-      "rollingBack": "Rolling back…",
-      "cveDetected": "CVEs detected"
-    },
-    "toasts": {
-      "updating": "{{name}} is being updated",
-      "updateFailed": "Failed to update {{name}}",
-      "rolledBack": "{{name}} rolled back successfully",
-      "rollbackFailed": "Failed to roll back {{name}}",
-      "checkStarted": "Check started",
-      "checkFailed": "Failed to start check"
-    }
-  },
-  "updates": {
-    "slug": "update queue",
-    "title": "Updates",
-    "subtitlePending": "{{count}} awaiting approval",
-    "criticalCves": "· {{count}} with critical CVEs",
-    "checkNow": "Check now",
-    "checking": "Checking…",
     "statusLabel": {
       "pending": "Pending",
       "approved": "Approved",
       "deploying": "Deploying",
       "deployed": "Deployed",
       "ignored": "Ignored",
-      "failed": "Failed",
-      "all": "All"
+      "failed": "Failed"
     },
     "cve": {
       "critical": "CRITICAL",
@@ -216,19 +193,20 @@
       }
     },
     "actions": {
-      "approveDeploy": "Approve & Deploy",
+      "update": "Update",
+      "updating": "Updating…",
+      "rollback": "Rollback",
+      "rollingBack": "Rolling back…",
+      "approve": "Approve & Deploy",
       "ignore": "Ignore",
-      "approveHint": "approving deploys immediately"
+      "approveHint": "approving deploys immediately",
+      "retry": "Retry"
     },
-    "hint": "// click any card to expand details, CVEs and notes",
-    "empty": {
-      "noPending": "No pending updates",
-      "noStatus": "No items with status \"{{status}}\"",
-      "allUpdated": "All containers are up to date.",
-      "tryDifferent": "Try a different filter."
-    },
-    "unknownEnv": "Unknown",
     "toasts": {
+      "updating": "{{name}} is being updated",
+      "updateFailed": "Failed to update {{name}}",
+      "rolledBack": "{{name}} rolled back successfully",
+      "rollbackFailed": "Failed to roll back {{name}}",
       "checkStarted": "Check started",
       "checkFailed": "Failed to start check",
       "approved": "Update approved — deploying",

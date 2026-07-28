@@ -343,7 +343,7 @@ export default function Dashboard() {
                   <div>
                     {c.status === 'update_available' && (
                       <Link
-                        to="/updates"
+                        to="/containers"
                         className="font-mono text-label text-brand-cyan no-underline rounded-sm border border-brand-cyan/20 bg-brand-cyan/5 px-1.5 py-0.5"
                       >
                         {t('dashboard.table.update')}

@@ -29,7 +29,6 @@
   "nav": {
     "dashboard": "Visão Geral",
     "containers": "Containers",
-    "updates": "Atualizações",
     "security": "Segurança",
     "registries": "Registries",
     "audit": "Auditoria",
@@ -139,6 +138,8 @@
     "title": "Containers",
     "subtitle_one": "{{filtered}} de {{count}} container",
     "subtitle_other": "{{filtered}} de {{count}} containers",
+    "pendingApprovals": "· {{count}} aguardando aprovação",
+    "criticalCves": "· {{count}} com CVEs críticos",
     "refreshing": "atualizando…",
     "checkNow": "Verificar agora",
     "checking": "Verificando…",
@@ -155,43 +156,19 @@
       "environment": "Ambiente",
       "checked": "Verificado",
       "updated": "Atualizado",
-      "cve": "CVE"
+      "update": "Update"
     },
     "empty": {
       "noResults": "Nenhum resultado para \"{{query}}\"",
       "none": "Nenhum container encontrado"
     },
-    "actions": {
-      "update": "Atualizar",
-      "updating": "Atualizando…",
-      "rollback": "Reverter",
-      "rollingBack": "Revertendo…",
-      "cveDetected": "CVEs detectados"
-    },
-    "toasts": {
-      "updating": "{{name}} está sendo atualizado",
-      "updateFailed": "Falha ao atualizar {{name}}",
-      "rolledBack": "{{name}} revertido com sucesso",
-      "rollbackFailed": "Falha ao reverter {{name}}",
-      "checkStarted": "Verificação iniciada",
-      "checkFailed": "Falha ao iniciar verificação"
-    }
-  },
-  "updates": {
-    "slug": "fila de atualizações",
-    "title": "Atualizações",
-    "subtitlePending": "{{count}} aguardando aprovação",
-    "criticalCves": "· {{count}} com CVEs críticos",
-    "checkNow": "Verificar agora",
-    "checking": "Verificando…",
     "statusLabel": {
       "pending": "Pendente",
       "approved": "Aprovado",
       "deploying": "Implantando",
       "deployed": "Concluído",
       "ignored": "Ignorado",
-      "failed": "Com falha",
-      "all": "Todos"
+      "failed": "Com falha"
     },
     "cve": {
       "critical": "CRÍTICA",
@@ -216,19 +193,20 @@
       }
     },
     "actions": {
-      "approveDeploy": "Aprovar & Implantar",
+      "update": "Atualizar",
+      "updating": "Atualizando…",
+      "rollback": "Reverter",
+      "rollingBack": "Revertendo…",
+      "approve": "Aprovar & Implantar",
       "ignore": "Ignorar",
-      "approveHint": "aprovar implanta imediatamente"
+      "approveHint": "aprovar implanta imediatamente",
+      "retry": "Tentar novamente"
     },
-    "hint": "// clique em qualquer card para expandir detalhes, CVEs e observações",
-    "empty": {
-      "noPending": "Nenhuma atualização pendente",
-      "noStatus": "Nenhum item com status \"{{status}}\"",
-      "allUpdated": "Todos os containers estão atualizados.",
-      "tryDifferent": "Tente um filtro diferente."
-    },
-    "unknownEnv": "Desconhecido",
     "toasts": {
+      "updating": "{{name}} está sendo atualizado",
+      "updateFailed": "Falha ao atualizar {{name}}",
+      "rolledBack": "{{name}} revertido com sucesso",
+      "rollbackFailed": "Falha ao reverter {{name}}",
       "checkStarted": "Verificação iniciada",
       "checkFailed": "Falha ao iniciar verificação",
       "approved": "Atualização aprovada — implantando",
