@@ -6,7 +6,7 @@ As políticas de atualização controlam **quando** e **como** o Timoneiro aplic
 
 ### Manual
 
-O modo padrão. Quando uma nova imagem é detectada, o Timoneiro cria uma entrada de atualização pendente e envia uma notificação (se configurado). Nenhuma ação é tomada até que você revise e aprove a atualização na página **Atualizações**.
+O modo padrão. Quando uma nova imagem é detectada, o Timoneiro cria uma entrada de atualização pendente e envia uma notificação (se configurado). Nenhuma ação é tomada até que você revise e aprove a atualização no painel expandido do container, na página **Containers**.
 
 Use este modo quando quiser controle total sobre cada atualização.
 

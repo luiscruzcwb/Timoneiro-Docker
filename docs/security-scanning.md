@@ -4,7 +4,7 @@ O Timoneiro verifica automaticamente novas versões de imagens em busca de CVEs 
 
 ## Como Funciona
 
-Quando uma atualização pendente é detectada, o Timoneiro aciona uma varredura Trivy da nova versão da imagem em segundo plano. Os resultados são anexados à entrada de atualização pendente e exibidos nas páginas **Atualizações** e **Segurança**.
+Quando uma atualização pendente é detectada, o Timoneiro aciona uma varredura Trivy da nova versão da imagem em segundo plano. Os resultados são anexados à entrada de atualização pendente e exibidos na página **Containers** (no painel expandido do container) e na página **Segurança**.
 
 As contagens de CVEs são exibidas por severidade:
 
@@ -50,13 +50,13 @@ A alternativa via Docker faz o pull da imagem Trivy no primeiro uso e a armazena
 
 ## Visualizando os Resultados
 
-### Página de Atualizações
+### Página de Containers
 
-Cada card de atualização pendente exibe um badge com o resumo de CVEs, caso vulnerabilidades sejam encontradas. Clique na atualização para ver o detalhamento completo por severidade e pacote.
+Um container com atualização pendente exibe um badge com o resumo de CVEs na linha da tabela, caso vulnerabilidades sejam encontradas. Clique na linha para expandi-la e ver o detalhamento completo por severidade e pacote.
 
 ### Página de Segurança
 
-A página **Segurança** agrega todos os dados de CVEs das atualizações pendentes. Filtre por severidade e ordene por container ou quantidade de vulnerabilidades para priorizar o que corrigir.
+A página **Segurança** agrega os dados de CVEs das atualizações pendentes, além de um histórico com as atualizações já aplicadas que tinham CVEs no momento do deploy — assim as vulnerabilidades não desaparecem da interface só porque a atualização foi aprovada. Filtre por severidade e ordene por container ou quantidade de vulnerabilidades para priorizar o que corrigir.
 
 ## Desativando a Varredura de CVEs
 

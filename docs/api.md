@@ -271,6 +271,8 @@ GET /history?limit=50&offset=0&environment=1&container=abc123
 | `environment` | — | Filtrar por ID de ambiente |
 | `container` | — | Filtrar por ID de container |
 
+Cada entrada inclui os campos `cveCritical`, `cveHigh`, `cveMedium`, `cveLow` e `cveData` (JSON com o detalhamento por pacote), copiados da varredura da atualização pendente no momento em que ela foi aplicada. Isso preserva os dados de CVE mesmo depois que a atualização sai do status `pending` — é o que alimenta o histórico exibido na página **Segurança**.
+
 ## Configurações
 
 ### Obter Configurações de Política

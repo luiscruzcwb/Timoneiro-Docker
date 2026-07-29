@@ -63,13 +63,9 @@ O Dashboard mostra:
 
 ### 2. Containers
 
-A página de **Containers** exibe todos os containers em execução com sua imagem, status atual e quando foi a última verificação. Use a barra de busca e os filtros de status para navegar.
+A página de **Containers** exibe todos os containers em execução com sua imagem, status atual e quando foi a última verificação. Use a barra de busca e os filtros de status para navegar. Um container com atualização pendente ganha um indicador na linha; clique nele para expandir o painel com detalhamento de CVEs, diff de digest, observações e os botões de aprovar/ignorar. Se a política de atualização estiver em modo **Manual**, é por aqui que você aprova ou ignora cada atualização.
 
-### 3. Atualizações
-
-A página de **Atualizações** mostra as atualizações detectadas aguardando revisão. Se a política de atualização estiver em modo **Manual**, você aprova ou ignora cada atualização por aqui.
-
-### 4. Configurações
+### 3. Configurações
 
 Em **Configurações**, configure:
 
