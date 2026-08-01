@@ -90,7 +90,6 @@ function CVECard({ update, container }: { update: PendingUpdate; container?: Con
     <Card>
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
-        style={{ borderLeft: `3px solid ${maxColor}` }}
         onClick={() => setExpanded(v => !v)}
       >
         <div className="text-text-muted shrink-0 flex">
@@ -103,8 +102,17 @@ function CVECard({ update, container }: { update: PendingUpdate; container?: Con
           <AlertTriangle size={12} style={{ color: maxColor }} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-display font-semibold text-text-bright" style={{ fontSize: '0.85rem' }}>
-            {name}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-display font-semibold text-text-bright" style={{ fontSize: '0.85rem' }}>
+              {name}
+            </span>
+            <span
+              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono font-bold text-3xs shrink-0"
+              style={{ color: maxColor, background: `${maxColor}14`, borderColor: `${maxColor}34` }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: maxColor, boxShadow: `0 0 6px ${maxColor}` }} />
+              {maxSev.label}
+            </span>
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             <span className="font-mono text-2xs text-text-soft truncate">{update.currentImage}</span>
@@ -180,7 +188,6 @@ function HistoryCVECard({ entry }: { entry: UpdateHistory }) {
     <Card>
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
-        style={{ borderLeft: `3px solid ${maxColor}` }}
         onClick={() => setExpanded(v => !v)}
       >
         <div className="text-text-muted shrink-0 flex">
@@ -193,8 +200,17 @@ function HistoryCVECard({ entry }: { entry: UpdateHistory }) {
           <AlertTriangle size={12} style={{ color: maxColor }} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-display font-semibold text-text-bright" style={{ fontSize: '0.85rem' }}>
-            {name}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-display font-semibold text-text-bright" style={{ fontSize: '0.85rem' }}>
+              {name}
+            </span>
+            <span
+              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono font-bold text-3xs shrink-0"
+              style={{ color: maxColor, background: `${maxColor}14`, borderColor: `${maxColor}34` }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: maxColor, boxShadow: `0 0 6px ${maxColor}` }} />
+              {maxSev.label}
+            </span>
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             <span className="font-mono text-2xs text-text-soft truncate">{entry.newImage}</span>

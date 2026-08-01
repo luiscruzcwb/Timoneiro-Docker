@@ -99,7 +99,7 @@ export default function Audit() {
             const sameTag = h.oldImage === h.newImage
 
             return (
-              <Card key={h.id} accent={tone}>
+              <Card key={h.id}>
                 <div className="px-4 py-3 flex items-center gap-4 flex-wrap">
                   <Icon size={14} style={{ color }} className="shrink-0" />
 

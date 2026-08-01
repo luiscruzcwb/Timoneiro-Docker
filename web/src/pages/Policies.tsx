@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,7 +9,10 @@ import { getEnvironments, getContainers, getSettings, updateSettings } from '../
 import type { Environment, Container, PolicySettings, MaintenanceWindow } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import { Card, Button, Badge, Input, Select, Label, Tone } from '../components/ui'
+import { useUndoableDelete } from '../hooks/useUndoableDelete'
 import clsx from 'clsx'
+
+const FOCUS_RING = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-cyan focus-visible:outline-offset-2 rounded-sm'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type UpdateMode = 'automatic' | 'manual' | 'scheduled'
@@ -160,6 +163,17 @@ export default function Policies() {
     setState(next)
     saveMutation.mutate(next)
   }
+
+  // Functional update so a delayed (undoable) removal never overwrites edits made
+  // to other windows while its undo timer is still running.
+  const removeWindowCommit = useCallback((id: string | number) => {
+    setState(s => {
+      const next = { ...s, maintenanceWindows: s.maintenanceWindows.filter(w => w.id !== id) }
+      saveMutation.mutate(next)
+      return next
+    })
+  }, [saveMutation])
+  const { remove: removeWindow, isPending: isRemovingWindow } = useUndoableDelete(removeWindowCommit)
 
   // ── Exceções por container ───────────────────────────────────────────────
   const [showContForm, setShowContForm] = useState(false)
@@ -536,11 +550,14 @@ export default function Policies() {
             ) : (
               <div className="space-y-2">
                 {state.maintenanceWindows.map(w => (
-                  <div key={w.id} className="rounded bg-ocean-ink border border-border-subtle">
+                  <div
+                    key={w.id}
+                    className={clsx('rounded bg-ocean-ink border border-border-subtle transition-opacity', isRemovingWindow(w.id) && 'opacity-40 pointer-events-none')}
+                  >
                     <div className="flex items-center gap-3 px-3 py-3">
                       <button
                         onClick={() => persist({ maintenanceWindows: state.maintenanceWindows.map(x => x.id === w.id ? { ...x, enabled: !x.enabled } : x) })}
-                        className={clsx('bg-transparent border-none cursor-pointer shrink-0 flex', w.enabled ? 'text-brand-cyan' : 'text-text-muted')}
+                        className={clsx('bg-transparent border-none cursor-pointer shrink-0 flex', w.enabled ? 'text-brand-cyan' : 'text-text-muted', FOCUS_RING)}
                       >
                         {w.enabled ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
                       </button>
@@ -555,8 +572,8 @@ export default function Policies() {
                       </div>
                       <Badge tone={w.enabled ? 'cyan' : 'neutral'} dot={false}>{w.enabled ? t('policies.section3.active') : t('policies.section3.inactive')}</Badge>
                       <button
-                        onClick={() => { if (confirm(t('policies.section3.removeConfirm', { name: w.name }))) persist({ maintenanceWindows: state.maintenanceWindows.filter(x => x.id !== w.id) }) }}
-                        className="text-text-muted hover:text-brand-coral bg-transparent border-none cursor-pointer flex transition-colors"
+                        onClick={() => removeWindow(w.id, t('common.removed', { name: w.name }), t('common.undo'))}
+                        className={clsx('text-text-muted hover:text-brand-coral bg-transparent border-none cursor-pointer flex transition-colors', FOCUS_RING)}
                       >
                         <Trash2 size={13} />
                       </button>

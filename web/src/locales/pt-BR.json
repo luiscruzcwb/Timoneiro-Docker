@@ -17,6 +17,8 @@
     "copy": "Copiar",
     "copyFailed": "Não foi possível copiar",
     "failed": "falha",
+    "removed": "\"{{name}}\" removido",
+    "undo": "Desfazer",
     "statusBadge": {
       "up_to_date": "Atualizado",
       "update_available": "Pendente",
@@ -382,8 +384,7 @@
       "allEnvironments": "todos os ambientes",
       "nextOccurrence": "próxima: {{when}}",
       "active": "ativa",
-      "inactive": "inativa",
-      "removeConfirm": "Remover \"{{name}}\"?"
+      "inactive": "inativa"
     }
   },
   "settings": {
@@ -433,8 +434,7 @@
       "dockerHostPlaceholderSocket": "unix:///var/run/docker.sock",
       "dockerHostPlaceholderTcp": "tcp://192.168.1.100:2376",
       "testConnection": "TESTAR CONEXÃO",
-      "add": "ADICIONAR",
-      "removeConfirm": "Remover \"{{name}}\"?"
+      "add": "ADICIONAR"
     },
     "notifications": {
       "comment": "// notificações · via Shoutrrr",
@@ -447,7 +447,6 @@
       "failed": "falhou",
       "test": "TESTAR",
       "editChannel": "Editar canal",
-      "removeConfirm": "Remover \"{{name}}\"?",
       "service": "// SERVIÇO",
       "moreServices": "menos serviços",
       "othersCount_one": "+ {{count}} outro serviço",

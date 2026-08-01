@@ -5,7 +5,10 @@ import { Database, Plus, Trash2, Pencil, CheckCircle, XCircle, Loader2, X } from
 import { getRegistries, createRegistry, updateRegistry, deleteRegistry, testRegistry, Registry } from '../api/client'
 import PageHeader from '../components/PageHeader'
 import { Card, Button, Input, Label, EmptyState } from '../components/ui'
+import { useUndoableDelete } from '../hooks/useUndoableDelete'
 import clsx from 'clsx'
+
+const FOCUS_RING = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-cyan focus-visible:outline-offset-2'
 
 type RegistryType = 'dockerhub' | 'ghcr' | 'generic'
 
@@ -59,6 +62,7 @@ export default function Registries() {
   const createMut = useMutation({ mutationFn: createRegistry, onSuccess: () => { qc.invalidateQueries({ queryKey: ['registries'] }); closePanel() } })
   const updateMut = useMutation({ mutationFn: ({ id, r }: { id: number; r: Partial<Registry> }) => updateRegistry(id, r), onSuccess: () => { qc.invalidateQueries({ queryKey: ['registries'] }); closePanel() } })
   const deleteMut = useMutation({ mutationFn: deleteRegistry, onSuccess: () => qc.invalidateQueries({ queryKey: ['registries'] }) })
+  const { remove: removeRegistry, isPending: isRemoving } = useUndoableDelete(id => deleteMut.mutate(id as number))
 
   function openAdd() {
     setEditing(null)
@@ -145,7 +149,10 @@ export default function Registries() {
       ) : (
         <div className="space-y-1.5">
           {registries.map(r => (
-            <Card key={r.id} className="flex items-center gap-3 px-4 py-3">
+            <Card
+              key={r.id}
+              className={clsx('flex items-center gap-3 px-4 py-3 transition-opacity', isRemoving(r.id) && 'opacity-40 pointer-events-none line-through decoration-text-muted')}
+            >
               <TypeBadge type={r.type} />
               <div className="flex-1 min-w-0">
                 <div className="font-display font-medium text-text-bright" style={{ fontSize: '0.82rem' }}>
@@ -169,10 +176,13 @@ export default function Registries() {
                 {TYPE_META[r.type]?.label ?? r.type}
               </span>
               <div className="flex items-center gap-1">
-                <button onClick={() => openEdit(r)} className="p-1.5 rounded transition-colors hover:bg-white/5 bg-transparent border-none cursor-pointer">
+                <button onClick={() => openEdit(r)} className={clsx('p-1.5 rounded transition-colors hover:bg-white/5 bg-transparent border-none cursor-pointer', FOCUS_RING)}>
                   <Pencil size={13} className="text-text-soft" />
                 </button>
-                <button onClick={() => deleteMut.mutate(r.id)} className="p-1.5 rounded transition-colors hover:bg-brand-coral/10 bg-transparent border-none cursor-pointer">
+                <button
+                  onClick={() => removeRegistry(r.id, t('common.removed', { name: r.name }), t('common.undo'))}
+                  className={clsx('p-1.5 rounded transition-colors hover:bg-brand-coral/10 bg-transparent border-none cursor-pointer', FOCUS_RING)}
+                >
                   <Trash2 size={13} className="text-brand-coral" />
                 </button>
               </div>

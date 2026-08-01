@@ -13,6 +13,10 @@ import PageHeader from '../components/PageHeader'
 import { Card, Button, Input, Label } from '../components/ui'
 import { useAuth } from '../hooks/useAuth'
 import { copyToClipboard } from '../lib/clipboard'
+import { useUndoableDelete } from '../hooks/useUndoableDelete'
+import clsx from 'clsx'
+
+const FOCUS_RING = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-cyan focus-visible:outline-offset-2 rounded-sm'
 
 // Kept for composed variants (http:// prefix inputs, pre block, token display)
 const inputStyle = {
@@ -97,6 +101,7 @@ function EnvSection() {
 
   const { data: envs = [] } = useQuery({ queryKey: ['environments'], queryFn: getEnvironments })
   const deleteMut = useMutation({ mutationFn: deleteEnvironment, onSuccess: () => qc.invalidateQueries({ queryKey: ['environments'] }) })
+  const { remove: removeEnv, isPending: isRemovingEnv } = useUndoableDelete(id => deleteMut.mutate(id as number))
   const editMut = useMutation({
     mutationFn: () => updateEnvironment(editingEnv!.id, {
       name: editName,
@@ -158,7 +163,11 @@ function EnvSection() {
       <div className="space-y-4">
         {/* Existing environments */}
         {(envs as Environment[]).map(e => (
-          <div key={e.id} style={{ border: '1px solid #0e2040', borderRadius: '3px', background: '#06090f', overflow: 'hidden' }}>
+          <div
+            key={e.id}
+            className={clsx('transition-opacity', isRemovingEnv(e.id) && 'opacity-40 pointer-events-none')}
+            style={{ border: '1px solid #0e2040', borderRadius: '3px', background: '#06090f', overflow: 'hidden' }}
+          >
             {/* Row */}
             <div className="flex items-center gap-3 px-3 py-2">
               <div style={{ color: '#22d3ee66', flexShrink: 0 }}>{typeIcon(e.type)}</div>
@@ -167,16 +176,20 @@ function EnvSection() {
                 <div className="font-mono truncate" style={{ color: '#7aa3c0', fontSize: '0.62rem' }}>{e.host}</div>
               </div>
               <div style={{ color: '#22d3ee44', fontSize: '0.55rem', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', flexShrink: 0 }}>{e.type}</div>
-              <button onClick={() => editingEnv?.id === e.id ? cancelEdit() : startEdit(e)}
-                style={{ color: editingEnv?.id === e.id ? '#22d3ee' : '#3d5a80', background: 'none', border: 'none', cursor: 'pointer' }}
-                onMouseEnter={ev => (ev.currentTarget.style.color = '#22d3ee')}
-                onMouseLeave={ev => (ev.currentTarget.style.color = editingEnv?.id === e.id ? '#22d3ee' : '#3d5a80')}>
+              <button
+                onClick={() => editingEnv?.id === e.id ? cancelEdit() : startEdit(e)}
+                className={clsx(
+                  'bg-transparent border-none cursor-pointer transition-colors',
+                  editingEnv?.id === e.id ? 'text-brand-cyan' : 'text-text-muted hover:text-brand-cyan',
+                  FOCUS_RING,
+                )}
+              >
                 {editingEnv?.id === e.id ? <X size={13} /> : <Pencil size={13} />}
               </button>
-              <button onClick={() => { if (confirm(t('settings.environments.removeConfirm', { name: e.name }))) deleteMut.mutate(e.id) }}
-                style={{ color: '#7aa3c0', background: 'none', border: 'none', cursor: 'pointer' }}
-                onMouseEnter={ev => (ev.currentTarget.style.color = '#f87171')}
-                onMouseLeave={ev => (ev.currentTarget.style.color = '#3d5a80')}>
+              <button
+                onClick={() => removeEnv(e.id, t('common.removed', { name: e.name }), t('common.undo'))}
+                className={clsx('bg-transparent border-none cursor-pointer text-text-soft hover:text-brand-coral transition-colors', FOCUS_RING)}
+              >
                 <Trash2 size={13} />
               </button>
             </div>
@@ -657,6 +670,7 @@ function NotifSection() {
     mutationFn: deleteChannel,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications/channels'] }),
   })
+  const { remove: removeChannel, isPending: isRemovingChannel } = useUndoableDelete(id => deleteMut.mutate(id as number))
 
   const handleTest = async (id: number) => {
     setTestingId(id)
@@ -711,7 +725,11 @@ function NotifSection() {
           const isEditing = editingId === ch.id
 
           return (
-            <div key={ch.id} className="rounded overflow-hidden" style={{ border: `1px solid ${isEditing ? '#22d3ee33' : '#0e2040'}`, background: '#06090f' }}>
+            <div
+              key={ch.id}
+              className={clsx('rounded overflow-hidden transition-opacity', isRemovingChannel(ch.id) && 'opacity-40 pointer-events-none')}
+              style={{ border: `1px solid ${isEditing ? '#22d3ee33' : '#0e2040'}`, background: '#06090f' }}
+            >
               {isEditing ? (
                 /* ── Edit mode ── */
                 <div className="p-3 space-y-2">
@@ -767,17 +785,17 @@ function NotifSection() {
                       style={{ color: '#7aa3c0', background: 'none', border: '1px solid #0e2040', padding: '3px 8px', borderRadius: '2px', fontSize: '0.58rem', fontFamily: 'JetBrains Mono, monospace', cursor: 'pointer' }}>
                       {testingId === ch.id ? <Loader size={10} className="animate-spin" /> : t('settings.notifications.test')}
                     </button>
-                    <button onClick={() => startEdit(ch)}
+                    <button
+                      onClick={() => startEdit(ch)}
                       title={t('settings.notifications.editChannel')}
-                      style={{ color: '#3d5a80', background: 'none', border: 'none', cursor: 'pointer', display:'flex', padding: '2px' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#22d3ee')}
-                      onMouseLeave={e => (e.currentTarget.style.color = '#3d5a80')}>
+                      className={clsx('flex p-0.5 bg-transparent border-none cursor-pointer text-text-muted hover:text-brand-cyan transition-colors', FOCUS_RING)}
+                    >
                       <Pencil size={13} />
                     </button>
-                    <button onClick={() => { if (confirm(t('settings.notifications.removeConfirm', { name: ch.name }))) deleteMut.mutate(ch.id) }}
-                      style={{ color: '#3d5a80', background: 'none', border: 'none', cursor: 'pointer', display:'flex', padding: '2px' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-                      onMouseLeave={e => (e.currentTarget.style.color = '#3d5a80')}>
+                    <button
+                      onClick={() => removeChannel(ch.id, t('common.removed', { name: ch.name }), t('common.undo'))}
+                      className={clsx('flex p-0.5 bg-transparent border-none cursor-pointer text-text-muted hover:text-brand-coral transition-colors', FOCUS_RING)}
+                    >
                       <Trash2 size={13} />
                     </button>
                   </div>
